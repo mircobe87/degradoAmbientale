@@ -21,15 +21,28 @@
     <head>
         <meta charset="utf-8" />
         <meta name="format-detection" content="telephone=no" />
-        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
         <!-- Kendo UI Mobile CSS -->
 		<link href="styles/kendo.mobile.all.min.css" rel="stylesheet" />
 		<!-- jQuery JavaScript -->
 		<script src="js/jquery.min.js"></script>
 		<!-- Kendo UI Mobile combined JavaScript -->
 		<script src="js/kendo.mobile.min.js"></script>
-		
+		<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=true"></script>
+		<!-- <script src="http://google-maps-utility-library-v3.googlecode.com/svn/trunk/geolocationmarker/src/geolocationmarker-compiled.js"></script> -->
+		<script type="text/javascript" src="http://goo.gl/T7AEvw"></script>
+		<script type="text/javascript" src="/javascript/georep.js"></script>
 		<link href="css/kendo.android.edit.css" rel="stylesheet" />
+
+<!-- The following style is used to disable the scroller and set the correct height for the map element -->
+        <style>
+            #map-view .km-content,
+            #map-view .km-scroll-container, 
+            #map-view #map {
+                display: -webkit-box;
+                width: 100%;
+            }
+        </style>
 
         <title>Degrado Ambientale</title>
     </head>
@@ -54,9 +67,8 @@
 			</ul>
 		</div>
 		<!-- View Map -->
-        <div data-role="view" data-title="Degrado Ambientale" id="map-view" data-layout="default">
-		    <h2>View Mappa Delle Segnalazioni</h2>
-		    <p>le API Cordova <b><span id="cordova">non</span></b> sono pronte</p>
+        <div data-role="view" data-init="app.initMap" data-title="Degrado Ambientale" id="map-view" data-layout="default" data-stretch="true">
+       		<div id="map" style="width:100%;"></div>
         </div>
         <!-- View List -->
         <div data-role="view" data-title="Degrado Ambientale" id="list-view" data-layout="default">
