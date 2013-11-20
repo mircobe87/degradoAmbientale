@@ -1,0 +1,10 @@
+
+/* visulaizza il titolo nella navbar */ 
+.km-android .km-navbar .km-view-title {
+	visibility: visible;
+}
+
+/* navbar in alto */
+.km-android .km-view {
+	-webkit-flex-direction: column;
+}
