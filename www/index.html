@@ -59,9 +59,8 @@
 		    <p>le API Cordova <b><span id="cordova">non</span></b> sono pronte</p>
         </div>
         <!-- View List -->
-        <div data-role="view" data-title="Degrado Ambientale" id="list-view" data-layout="default">
-		    <h2>View Lista Proprie Segnalazioni</h2>
-		    <p>le API Cordova <b><span id="cordova">non</span></b> sono pronte</p>
+        <div data-role="view" data-title="Degrado Ambientale" id="list-view" data-layout="default" data-init="app.getDataFromServer">
+		    <ul data-role="listView" id="listViewContent" data-style="inset"></ul>
         </div>
         <!-- View New -->
         <div data-role="view" data-title="Degrado Ambientale" id="new-view" data-layout="default">

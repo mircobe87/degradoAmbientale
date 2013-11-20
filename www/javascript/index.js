@@ -39,3 +39,21 @@ var app = new kendo.mobile.Application($(document).body);
     app.receivedEvent = function(id) {
         $("#cordova").text("");
     };
+	app.getDataFromServer = function(){
+		/*getUserDoc(georep.user._id, function(err, data){
+			if (err != undefined){
+				alert("Impossibile caricare i dati dal server");
+			}
+			else{
+				var title_list = [];
+				var id_list = [];
+				for (var i = 0; i < data.total_rows; i++){
+					title_list[i] = data.rows.value[i];
+					id_list[i]= data.rows.id[i];
+				}
+				$("#listViewContent").kendoMobileListView({dataSource: title_list});
+			}
+		});*/
+		var title_list = ["titolo1", "titolo2", "titolo3"];
+		$("#listViewContent").kendoMobileListView({dataSource: title_list});
+	};
