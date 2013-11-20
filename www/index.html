@@ -29,16 +29,47 @@
 		<!-- Kendo UI Mobile combined JavaScript -->
 		<script src="js/kendo.mobile.min.js"></script>
 		
-		<link href="css/kendo.mobile.exported.css" rel="stylesheet" />
+		<!-- <link href="css/kendo.mobile.exported.css" rel="stylesheet" /> -->
         <title>Degrado Ambientale</title>
     </head>
     <body>
 
 <!-- START APP ---------------------------------------------------------------->
-
-		<!-- View Prova -->
-        <div data-role="view" data-title="Degrado Ambientale" id="prova" data-layout="default">
-		    <h2>View Di Prova</h2>
+		 <!-- Drawer -->
+		<div data-role="drawer" id="drawer">
+			<ul data-role="listview" data-type="group">
+				<li>Men&ugrave
+					<ul>
+						<li data-icon="globe"><a href="#map-view" data-transition="none">Mappa</a></li>
+						<li data-icon="organize"><a href="#list-view" data-transition="none">Segnalazioni</a></li>
+						<li data-icon="compose"><a href="#new-view" data-transition="none">Segnala</a></li>
+					</ul>
+				</li>
+				<li>Opzioni
+					<ul>
+						<li data-icon="contacts"><a href="#user-view" data-transition="none">Utente</a></li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<!-- View Map -->
+        <div data-role="view" data-title="Degrado Ambientale" id="map-view" data-layout="default">
+		    <h2>View Mappa Delle Segnalazioni</h2>
+		    <p>le API Cordova <b><span id="cordova">non</span></b> sono pronte</p>
+        </div>
+        <!-- View List -->
+        <div data-role="view" data-title="Degrado Ambientale" id="list-view" data-layout="default">
+		    <h2>View Lista Proprie Segnalazioni</h2>
+		    <p>le API Cordova <b><span id="cordova">non</span></b> sono pronte</p>
+        </div>
+        <!-- View New -->
+        <div data-role="view" data-title="Degrado Ambientale" id="new-view" data-layout="default">
+		    <h2>View Nuova Segnalazione</h2>
+		    <p>le API Cordova <b><span id="cordova">non</span></b> sono pronte</p>
+        </div>
+        <!-- View User -->
+        <div data-role="view" data-title="Degrado Ambientale" id="user-view" data-layout="default">
+		    <h2>View Opzioni Utente</h2>
 		    <p>le API Cordova <b><span id="cordova">non</span></b> sono pronte</p>
         </div>
 
