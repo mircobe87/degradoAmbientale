@@ -71,7 +71,7 @@
        		<div id="map" style="width:100%;"></div>
         </div>
         <!-- View List -->
-        <div data-role="view" data-title="Degrado Ambientale" id="list-view" data-layout="default" data-init="app.getDataFromServer">
+        <div data-role="view" data-title="Degrado Ambientale" id="list-view" data-layout="default" data-show="app.getDataFromServer">
 		    <ul data-role="listView" id="listViewContent" data-style="inset"></ul>
         </div>
         <!-- View New -->
@@ -84,6 +84,22 @@
 		    <h2>View Opzioni Utente</h2>
 		    <p>le API Cordova <b><span id="cordova">non</span></b> sono pronte</p>
         </div>
+        
+        <!--  View Dettagli Segnalazione -->
+        <div data-role="view" id="view-repoDetail" style="width: 90%; height: 90%" data-show="app.loadRepo">
+		    <div data-role="header">
+		        <div data-role="navbar">
+		            <span id="repoDetail-title">Titolo</span>
+		        </div>
+		    </div>	
+			<ul data-role="listview" data-style="inset">
+				<li><label for="nickName">NickName: <input type="text" id="nickName" readonly="true"/></label></li>
+				<li><label for="mail">Mail: <input type="text" id="mail" readonly="true" value="mail"/></label>
+				<li><label for="descrizione">Descrizione: <input type="text" id="descrizione" readonly="true"/></label></li>
+				<li><label for="indirizzo">Nei pressi di: <input type="text" id="indirizzo" readonly="true"/></label></li>
+				<li><img id="repoImg" alt="Qui ci finirà la foto della segnalazione"/></li>				
+			</ul>
+		</div>
 
         <!-- Layout di Default -->
         <div data-role="layout" data-id="default">
@@ -102,6 +118,7 @@
         <script type="text/javascript" src="javascript/georep.js"></script>
         <script type="text/javascript">
             app.initialize();
+            app.onDeviceReady();
         </script>
     </body>
 </html>

@@ -17,7 +17,11 @@
  * under the License.
  */
 var app = new kendo.mobile.Application($(document).body);
-
+	/* oggetto che contiene i campi userId e docId di una particolare segnalazione*/
+	app.query = {
+			docId: "",
+			userId: ""
+	};
 	//inizializza la mappa
 	app.initMap = function(e){
 		var mapElement = $("#map");
@@ -138,22 +142,24 @@ var app = new kendo.mobile.Application($(document).body);
     // Update DOM on a Received Event
     app.receivedEvent = function(id) {
         $("#cordova").text("");
-           	name: 'nome',
-           	password: 'password',
-           	nick: 'nomignolo',
-           	mail: 'nomignolo@mail.com'
+        georep.user.set({
+           	name: 'mibe',
+           	password: '1234',
+           	nick: 'mirco',
+           	mail: 'mibe@mail.com'
          });
-       georep.db.setAdmin('pratesim', 'cou111Viola<3');
-       georep.db.setDBName('places');
+       georep.db.setAdmin('mircobe87', 'COU0x7bemirco13');
+       georep.db.setDBName('testdb');
        georep.db.setURLServer({
        	proto: 'http://',
-       	host: '192.168.0.118',
+       	host: 'mibe.homepc.it',
        	port: 5984
        });
     };
     /* prende i titoli, di tutte le segnalazioni effettuate dall'utente, dal server couchdb. 
      * Poi li inserisce nella listView */
 	app.getDataFromServer = function(){
+		georep.db.setDBName('testdb');
 		georep.db.getUserDocs(georep.user._id, function(err, data){
 			if (err != undefined){
 				alert("Impossibile caricare i dati dal server");
@@ -165,9 +171,10 @@ var app = new kendo.mobile.Application($(document).body);
 					 */
 					dataSource: data.rows,
 					click: function(e) {
-					     console.log("value: " + e.dataItem.value + " id: " + e.dataItem.id);
+					     app.query.docId = e.dataItem.id;
+					     app.query.userId = e.dataItem.key;
 					     /* devo aprire la view per la visualizzazione completa della segnalazione con id e.dataItem.id */
-					     
+					     app.navigate("#view-repoDetail");
 					},
 					/* in questo modo all'interno della lista viene visualizzato solo il campo value 
 					 * (cioè il titolo della segnalazione). 
@@ -176,4 +183,31 @@ var app = new kendo.mobile.Application($(document).body);
 				});
 			}
 		});
+	};
+	
+	/* carica la segnalazione completa */
+	app.loadRepo = function(e){
+	     georep.db.setDBName('testdb');
+	     georep.db.getDoc(app.query.docId, true, function(err, data){
+	    	 if (err != undefined){
+	    		 alert(err);
+	    	 }
+	    	 else {
+	    		 console.log(data);
+	    		 $("#descrizione").attr("value", data.msg);
+	    		 $("#repoDetail-title").text(data.title);
+	    		 $("#repoImg").attr("src", "data:"+data._attachments.img.content_type+";base64,"+data._attachments.img.data);
+	    	 }
+	     });
+	     /* prendo il documento con i dati dell'utente che ha effettuato la segnalazione selezionata */
+	     georep.db.setDBName('_users');
+	     georep.db.getDoc(app.query.userId, false, function(err, data){
+	    	 if (err != undefined){
+	    		 alert(err);
+	    	 }
+	    	 else {
+	    		 $("#nickName").attr("value", data.nick);
+	    		 $("#mail").attr("value", data.mail);
+	    	 }
+	     });
 	};
