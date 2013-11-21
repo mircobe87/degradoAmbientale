@@ -139,16 +139,16 @@ var app = new kendo.mobile.Application($(document).body);
     app.receivedEvent = function(id) {
         $("#cordova").text("");
         georep.user.set({
-           	name: 'nome',
-           	password: 'password',
-           	nick: 'nomignolo',
-           	mail: 'nomignolo@mail.com'
+           	name: 'mibe',
+           	password: '1234',
+           	nick: 'mirco',
+           	mail: 'mibe@mail.com'
          });
-		georep.db.setAdmin('pratesim', 'cou111Viola<3');
-		georep.db.setDBName('places');
+		georep.db.setAdmin('mircobe87', 'COU0x7bemirco13');
+		georep.db.setDBName('testdb');
 		georep.db.setURLServer({
 			proto: 'http://',
-			host: '192.168.0.118',
+			host: '127.0.0.1',
 			port: 5984
 		});
 	};
