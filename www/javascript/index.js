@@ -17,6 +17,106 @@
  * under the License.
  */
 var app = new kendo.mobile.Application($(document).body);
+
+	//inizializza la mappa
+	app.initMap = function(e){
+		var mapElement = $("#map");
+		//var container = e.view.content;
+		
+		var mapOptions = {
+			center: new google.maps.LatLng(43.720741,10.408413),
+			zoom: 10
+		};
+		app.map = new google.maps.Map(mapElement[0], mapOptions);
+		/*app.geoMarker = new GeolocationMarker(app.map);*/
+		
+		var markOptions = {
+			clickable: false,
+			flat: true,
+			icon: '/img/male-2.png',
+			map: app.map,
+			position: new google.maps.LatLng(43.720741,10.408413)			
+		};
+		app.markMyLoc = new google.maps.Marker(markOptions);
+		
+		navigator.geolocation.getCurrentPosition(function(pos){
+			var lat = pos.coords.latitude;
+			var lng = pos.coords.longitude;
+			var newPosition = new google.maps.LatLng(lat,lng);
+			console.log("lat: "+lat + " lng: " + lng); 
+			app.map.setCenter(newPosition);
+			app.markMyLoc.setPosition(newPosition);
+		});
+		// aggiorna il contenuto della mappa quando si muove
+		google.maps.event.addListener(app.map,'center_changed',app.updateMap);
+	};
+	
+	// vettore dei marker delle segnalazioni sulla mappa
+	app.markers = [];
+	
+	// rimuove tutti i marker dalla mappa e dalla memoria
+	app.clearMap = function(){
+		for( var i=0, len=app.markers.length; i<len; i++){
+			app.markers[i].setMap(undefined);
+		}
+		app.markers.length = 0; // cancella i riferimenti dei marker
+	};
+	// aggiorna i marker sulla mappa
+	
+	app.updateMap = function(){
+		console.log('hai mosso la mappa');
+		// rileva i limiti visualizzati nella mappa e costruisce i 2 angoli
+		// di riferimento per inoltrare la richiesta al server
+		var mapBound = app.map.getBounds();
+		var bl_corner = {
+			lat: mapBound.getSouthWest().lat(),
+			lng: mapBound.getSouthWest().lng()
+		};
+		var tr_corner = {
+			lat: mapBound.getNorthEast().lat(),
+			lng: mapBound.getNorthEast().lng()
+		};
+
+		// chiedo al server tutte le segnalazioni che stanno sull'area
+		// della mappa visualizzata
+		georep.db.getDocsInBox(bl_corner, tr_corner, function(err, data){
+			if(err){
+				alert('Impossobole contattare il server');
+			}else{
+			
+				app.clearMap(); // cancello i vecchi marker
+				
+				// setta l'handler dell'evento click per un marker
+				var setUpMarckerClick = function(marker){
+					google.maps.event.addListener(marker, 'click', function(){
+						alert('hai cliccato sul marker con ID: ' + marker.docId);
+					});
+				};
+				
+				// per ogni documento che il server mi ha inviato io creo un
+				// marker e lo metto nel vettore e gli configuro un handler per
+				// l'evento click
+				for(var i=0, len=data.rows.length; i<len; i++){
+					var markerOpt = {
+						map: app.map,
+						docId: data.rows[i].id, // properti ausiliaria utile per quando si clicchera'
+						                        // sul marker: in questo modo possiamo chiedere al
+						                        // server il Doc tramite il suo ID
+						position: new google.maps.LatLng(
+							data.rows[i].geometry.coordinates[1], // latitudine  (asse y)
+							data.rows[i].geometry.coordinates[0]  // longitudine (asse x)
+						),
+						icon: (data.rows[i].value == georep.user._id)?'/img/radiation.png':'/img/radiation-white.png'
+					}
+					// metto nel vettore il nuovo marker
+					app.markers[i] = new google.maps.Marker(markerOpt);
+					// setto il marker per rispondere all'evento di click
+					setUpMarckerClick(app.markers[i]);
+				}
+			}
+		});
+	};
+	
     // Application Constructor
     app.initialize = function() {
         this.bindEvents();
@@ -38,7 +138,6 @@ var app = new kendo.mobile.Application($(document).body);
     // Update DOM on a Received Event
     app.receivedEvent = function(id) {
         $("#cordova").text("");
-        georep.user.set({
            	name: 'nome',
            	password: 'password',
            	nick: 'nomignolo',
@@ -51,7 +150,6 @@ var app = new kendo.mobile.Application($(document).body);
        	host: '192.168.0.118',
        	port: 5984
        });
-        
     };
     /* prende i titoli, di tutte le segnalazioni effettuate dall'utente, dal server couchdb. 
      * Poi li inserisce nella listView */

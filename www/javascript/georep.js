@@ -123,6 +123,7 @@ var georep = {
 				throw 'getDoc() richiede almeno 2 argomenti: docId (string), attachment (boolean).';
 			else if (!docId || typeof docId != 'string' || typeof attachments != 'boolean')
 				throw 'Uno o piu\' parametri non validi.';
+
 			else {
 				var attach = (attachments)?'?attachments=true':'?attachments=false';
 				$.ajax({
@@ -190,6 +191,7 @@ var georep = {
 				throw 'Parametro non valido: tr_corner.';
 			else if (arguments.length > 2 && (!callback || typeof callback != 'function'))
 				throw 'Parametro opzionale non valido: callback.';
+
 			else if (!georep.db.isConfigured())
 				throw 'Impossibile contattare il database: db non cofigurato';
 			else if (!georep.user.isConfigured())
@@ -474,4 +476,5 @@ var georep = {
 		}
 	}
 };
+
 
