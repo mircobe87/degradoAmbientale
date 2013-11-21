@@ -38,22 +38,44 @@ var app = new kendo.mobile.Application($(document).body);
     // Update DOM on a Received Event
     app.receivedEvent = function(id) {
         $("#cordova").text("");
+        georep.user.set({
+           	name: 'nome',
+           	password: 'password',
+           	nick: 'nomignolo',
+           	mail: 'nomignolo@mail.com'
+         });
+       georep.db.setAdmin('pratesim', 'cou111Viola<3');
+       georep.db.setDBName('places');
+       georep.db.setURLServer({
+       	proto: 'http://',
+       	host: '192.168.0.118',
+       	port: 5984
+       });
+        
     };
+    /* prende i titoli, di tutte le segnalazioni effettuate dall'utente, dal server couchdb. 
+     * Poi li inserisce nella listView */
 	app.getDataFromServer = function(){
-		/*getUserDoc(georep.user._id, function(err, data){
+		georep.db.getUserDocs(georep.user._id, function(err, data){
 			if (err != undefined){
 				alert("Impossibile caricare i dati dal server");
 			}
 			else{
-				var title_list = [];
-				var id_list = [];
-				for (var i = 0; i < data.total_rows; i++){
-					title_list[i] = data.rows.value[i];
-					id_list[i]= data.rows.id[i];
-				}
-				$("#listViewContent").kendoMobileListView({dataSource: title_list});
+				$("#listViewContent").kendoMobileListView({
+					/* data.rows è il vettore restituito dalla getUserDocs in caso di successo.
+					 * Ogni elemento del vettore è del tipo {id: ..., key: ..., value: ...}
+					 */
+					dataSource: data.rows,
+					click: function(e) {
+					     console.log("value: " + e.dataItem.value + " id: " + e.dataItem.id);
+					     /* devo aprire la view per la visualizzazione completa della segnalazione con id e.dataItem.id */
+					     
+					},
+					/* in questo modo all'interno della lista viene visualizzato solo il campo value 
+					 * (cioè il titolo della segnalazione). 
+					 */
+					template: "#:data.value#"
+				});
 			}
-		});*/
-		var title_list = ["titolo1", "titolo2", "titolo3"];
-		$("#listViewContent").kendoMobileListView({dataSource: title_list});
+		});
 	};

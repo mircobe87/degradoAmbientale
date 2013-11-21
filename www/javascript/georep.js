@@ -150,6 +150,71 @@ var georep = {
 			}
 		},
 		/**
+		 * Chiede al DB tutti i documenti che sono posizionati in una certa area
+		 * rettangolare.
+		 *
+		 * bl_corner (object): coordinate del vertice in basso a sinistra del
+		 *     rettangolo.
+		 * tr_corner (object): coordinate del vertice in alto a destra del
+		 *     rettangolo.
+		 * callback ( function(err, data) ): funzione chiamata al termine della
+		 *     richiesta al server. In caso di errore, 'err' contiene un oggetto
+		 *     che descrive l'errore altrimenti 'data' contiene il risultato
+		 *     della query.
+		 *
+		 * entrambi i vertici sono oggetti del tipo:
+		 *     {
+		 *         lng: (number),
+		 *         lat: (number)
+		 *     }
+		 */
+		getDocsInBox: function(bl_corner, tr_corner, callback){
+			var viewPath = georep.constants.designDocs[0].name + '/' +
+			               georep.constants.designDocs[0].handlers[1].name + '/' +
+			               georep.constants.designDocs[0].handlers[1].views[0];
+			var queryOpts = '?bbox=' +
+				                bl_corner.lng + ',' + bl_corner.lat + ',' +
+				                tr_corner.lng + ',' + tr_corner.lat;
+			
+			if (arguments.length < 2)
+				throw 'getDocsInBox() richiede due argomenti: bl_corner (object), tr_corner (object).';
+			else if (typeof bl_corner != 'object' || typeof tr_corner != 'object')
+				throw 'Uno o piu\' parametri non validi: devono essere \'object\'.';
+			else if (
+			!bl_corner.lng || typeof bl_corner.lng != 'number'|| bl_corner.lng < -180 || bl_corner.lng > 180 ||
+			!bl_corner.lat || typeof bl_corner.lat != 'number'|| bl_corner.lat <  -90 || bl_corner.lat >  90  )
+				throw 'Parametro non valido: bl_corner.';
+			else if (
+			!tr_corner.lng || typeof tr_corner.lng != 'number'|| tr_corner.lng < -180 || tr_corner.lng > 180 ||
+			!tr_corner.lat || typeof tr_corner.lat != 'number'|| tr_corner.lat <  -90 || tr_corner.lat >  90  )
+				throw 'Parametro non valido: tr_corner.';
+			else if (arguments.length > 2 && (!callback || typeof callback != 'function'))
+				throw 'Parametro opzionale non valido: callback.';
+			else if (!georep.db.isConfigured())
+				throw 'Impossibile contattare il database: db non cofigurato';
+			else if (!georep.user.isConfigured())
+				throw 'Impossibile inviare la richiesta al server da un utente non configurato.';
+			else {
+				$.ajax({
+					url: georep.db.proto + georep.db.host + ':' + georep.db.port + '/' +
+						 georep.db.name + '/_design/' + viewPath + queryOpts,
+					type: 'GET',
+					headers: {
+						Accept: 'application/json',
+						Authorization: 'Basic ' + georep.user.base64
+					},
+					success: function(data){
+						if(callback)
+							callback(undefined, data);
+					},
+					error: function(jqXHR, textStatus, errorThrown){
+						if(callback)
+							callback({jqXHR: jqXHR, textStatus: textStatus, errorThrown: errorThrown},undefined);
+					}
+				});
+			}
+		},
+		/**
 		 * Chiede al DB tutti gli ID dei documenti creati da un utente.
 		 *
 		 * userId (string): identificatore unico di un utente.
@@ -159,8 +224,10 @@ var georep = {
 		 *     della query.
 		 */
 		getUserDocs: function(userId, callback){
-			var dDoc = georep.constants.designDocs[0].name;
-			var view = georep.constants.designDocs[0].views[0];
+			var viewPath = georep.constants.designDocs[0].name + '/' +
+			               georep.constants.designDocs[0].handlers[0].name + '/' +
+			               georep.constants.designDocs[0].handlers[0].views[0];
+			var queryOpts = '?key="' + userId + '"';
 			
 			if (arguments.length < 1)
 				throw 'getUserDocs() richiede almeno un argomento: userId (string).';
@@ -175,7 +242,7 @@ var georep = {
 			else {
 				$.ajax({
 					url: georep.db.proto + georep.db.host + ':' + georep.db.port + '/' +
-						 georep.db.name + '/_design/' + dDoc + '/_view/' + view + '?key="' + userId + '"',
+						 georep.db.name + '/_design/' + viewPath + queryOpts,
 					type: 'GET',
 					headers: {
 						Accept: 'application/json',
@@ -183,7 +250,7 @@ var georep = {
 					},
 					success: function(data){
 						if(callback)
-							callback(data, undefined);
+							callback(undefined, data);
 					},
 					error: function(jqXHR, textStatus, errorThrown){
 						if(callback)
@@ -407,18 +474,4 @@ var georep = {
 		}
 	}
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
