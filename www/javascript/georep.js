@@ -123,7 +123,6 @@ var georep = {
 				throw 'getDoc() richiede almeno 2 argomenti: docId (string), attachment (boolean).';
 			else if (!docId || typeof docId != 'string' || typeof attachments != 'boolean')
 				throw 'Uno o piu\' parametri non validi.';
-
 			else {
 				var attach = (attachments)?'?attachments=true':'?attachments=false';
 				$.ajax({
@@ -191,7 +190,6 @@ var georep = {
 				throw 'Parametro non valido: tr_corner.';
 			else if (arguments.length > 2 && (!callback || typeof callback != 'function'))
 				throw 'Parametro opzionale non valido: callback.';
-
 			else if (!georep.db.isConfigured())
 				throw 'Impossibile contattare il database: db non cofigurato';
 			else if (!georep.user.isConfigured())
@@ -473,8 +471,86 @@ var georep = {
 					}
 				});
 			}
+		},
+		/**
+		 * Aggiorna l'utente corrente sia in locale che sul DB.
+		 *
+		 * user (object): deve essere un utente valido per 'georep.user.set()'
+		 * callback ( function(err, data) ):
+		 *     funzione di callback chiamata sia in caso di errore che di successo;
+		 *        err:  oggetto che descrive l'errore, se si e' verificato;
+		 *        data: oggetto che mostra il messaggio ricevuto se non si sono verificati errori.
+		 */
+		update: function(user, callback){
+			if (arguments.length < 1){
+				throw 'update() richiede un argomento: user (object).';
+			} else if (typeof user != 'object') {
+				throw 'Impossibile aggiornare l\'utente, parametro non valido.';
+			} else if (
+			!user.name      || typeof user.name      != 'string' ||
+			!user.password  || typeof user.password  != 'string' ||
+			!user.nick      || typeof user.nick      != 'string' ||
+			!user.mail      || typeof user.mail      != 'string' ){
+				throw 'Impossibile settare "user", uno o piu\' properties non valide.';
+			} else if (arguments.length > 1 && typeof callback != 'function') {
+					throw 'Il parametro opzionale deve essere una funzione';
+			} else if (!georep.user.isConfigured()) {
+					throw 'Utente corrente non configurato.';
+			} else if (!georep.db.isConfigured()) {
+					throw 'Impossibile contattare il database: server non configurato.';
+			} else {
+				$.ajax({
+					url: georep.db.proto + georep.db.host + ':' +
+						 georep.db.port + '/_users/' + georep.user._id,
+					headers: {
+						Accept: 'application/json',
+						Authorization: 'Basic ' + georep.user.base64
+					},
+					dataType: 'json',
+					success: function(data){
+						console.log(data);
+						var rev = data._rev;
+						$.ajax({
+							url: georep.db.proto + georep.db.host + ':' +
+						         georep.db.port + '/_users/' + georep.user._id +
+						         '?rev=' + rev,
+							type: 'PUT',
+							headers: {
+								Authorization: 'Basic ' + georep.user.base64
+							},
+							dataType: 'json',
+							data: JSON.stringify({
+								name: user.name,
+								password: user.password,
+								nick: user.nick,
+								mail: user.mail,
+								type: georep.user.type,
+								roles: georep.user.roles
+							}),
+							success: function(data){
+								georep.user.set(user);
+								georep.user.isConfigured();
+								/*console.log("Utente registrato con successo! " +data);*/
+								if (callback) {
+									callback(undefined, data);
+								}
+							},
+							error: function(jqXHR, textStatus, errorThrown){
+								/*console.log("Utente NON registrato! " + jqXHR + textStatus + errorThrown);*/
+								if (callback){
+									callback({jqXHR: jqXHR, textStatus: textStatus, errorThrown: errorThrown}, undefined);
+								}
+							}
+						});
+					},
+					error: function(jqXHR, textStatus, errorThrown){
+						if (callback){
+							callback({jqXHR: jqXHR, textStatus: textStatus, errorThrown: errorThrown}, undefined);
+						}
+					}
+				});
+			}
 		}
 	}
 };
-
 

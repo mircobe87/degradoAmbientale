@@ -18,8 +18,13 @@
  */
 var app = new kendo.mobile.Application($(document).body);
 
+	app.provaInitMap = function(){
+		console.log('prova init mappa');
+	};
+
 	//inizializza la mappa
 	app.initMap = function(e){
+	console.log("initmap");
 		var mapElement = $("#map");
 		//var container = e.view.content;
 		
@@ -47,8 +52,10 @@ var app = new kendo.mobile.Application($(document).body);
 			app.map.setCenter(newPosition);
 			app.markMyLoc.setPosition(newPosition);
 		});
-		// aggiorna il contenuto della mappa quando si muove
-		google.maps.event.addListener(app.map,'center_changed',app.updateMap);
+		// aggiorna il contenuto della mappa quando termina il trascinamento.
+		google.maps.event.addListener(app.map,'dragend',app.updateMap);
+		// aggiorna il contenuto della mappa quando cambia il livello di zoom.
+		google.maps.event.addListener(app.map,'zoom_changed',app.updateMap);
 	};
 	
 	// vettore dei marker delle segnalazioni sulla mappa
@@ -79,6 +86,7 @@ var app = new kendo.mobile.Application($(document).body);
 
 		// chiedo al server tutte le segnalazioni che stanno sull'area
 		// della mappa visualizzata
+		georep.db.setDBName('testdb');
 		georep.db.getDocsInBox(bl_corner, tr_corner, function(err, data){
 			if(err){
 				alert('Impossobole contattare il server');
@@ -117,6 +125,94 @@ var app = new kendo.mobile.Application($(document).body);
 		});
 	};
 	
+	// carica la view di startup se e' il primo avvio
+	// altrimenti carica la mappa.
+	app.loader = function() {
+		if(!localStorage.userNick || !localStorage.userMail){
+			app.navigate('#startup-view');
+			//$('#startup-input-ok').on('click',app.saveOptions);
+		} else {
+			app.configServer();
+			app.updateMap();
+			app.navigate('#:back');
+		}
+	};
+	
+	// aggiorna le ozioni dell'utente.
+	app.saveOptions = function(nick, mail){
+//		var nick = $('#startup-input-nick')[0].value;
+//		var mail = $('#startup-input-mail')[0].value;
+		if (!nick || !mail)
+			alert('Inserire NickName e E-Mail');
+		else {
+			// aggiornare le info sul server e poi fare il seguente:
+			georep.user.update({
+				name: georep.user.name,
+				password: georep.user.password,
+				nick: nick,
+				mail: mail
+			},function(err, data){
+				if(!err){
+					localStorage.userNick = nick;
+					localStorage.userMail = mail;
+					console.log("salvato in locale 'nick': " + localStorage.userNick);
+					console.log("salvato in locale 'mail': " + localStorage.userMail);
+			
+					app.configServer();
+					app.updateMap();
+					app.navigate('#:back');
+				}else{
+					alert('Impossibile contattare il server: aggiornamento non riuscito.');
+				}
+			});
+		}
+	};
+	app.initStartupView = function(){
+		$('#startup-input-ok').on('click',function(){
+			var nick = $('#startup-input-nick')[0].value;
+			var mail = $('#startup-input-mail')[0].value;
+			app.saveOptions(nick, mail);
+		});
+	};
+	app.showOptionView = function(){
+		var currentNick = localStorage.userNick;
+		var currentMail = localStorage.userMail;
+		$('#input-nick').attr('value',currentNick);
+		$('#input-mail').attr('value',currentMail);
+	};
+	app.initOptionView = function(){
+		$('#input-ok').on('click', function(){
+			var currentNick = localStorage.userNick;
+			var currentMail = localStorage.userMail;
+			var newNick = $('#input-nick')[0].value;
+			var newMail = $('#input-mail')[0].value;
+			console.log('newNick: ' + newNick);
+			console.log('newMail: ' + newMail);
+			if(newNick != currentNick || newMail != currentMail)
+				app.saveOptions(newNick, newMail);
+			else
+				app.navigate('#:back');
+		});
+	};
+	
+	// configura tutte le credenziali per la cominicazione con il server
+	// del database.
+	app.configServer = function(){
+		georep.user.set({
+	       	name: 'mibe',
+	       	password: '1234',
+	       	nick: localStorage.userNick,
+	       	mail: localStorage.userMail
+	    });
+		georep.db.setAdmin('mircobe87', 'COU0x7bemirco13');
+		georep.db.setDBName('testdb');
+		georep.db.setURLServer({
+			proto: 'http://',
+			host: '192.168.0.2',
+			port: 5984
+		});
+	};
+	
     // Application Constructor
     app.initialize = function() {
         this.bindEvents();
@@ -133,24 +229,13 @@ var app = new kendo.mobile.Application($(document).body);
     // The scope of 'this' is the event. In order to call the 'receivedEvent'
     // function, we must explicity call 'app.receivedEvent(...);'
     app.onDeviceReady = function() {
-        app.receivedEvent('deviceready');
+        //app.receivedEvent('deviceready');
+        app.loader();
     };
+    
     // Update DOM on a Received Event
     app.receivedEvent = function(id) {
         $("#cordova").text("");
-        georep.user.set({
-           	name: 'mibe',
-           	password: '1234',
-           	nick: 'mirco',
-           	mail: 'mibe@mail.com'
-         });
-		georep.db.setAdmin('mircobe87', 'COU0x7bemirco13');
-		georep.db.setDBName('testdb');
-		georep.db.setURLServer({
-			proto: 'http://',
-			host: '127.0.0.1',
-			port: 5984
-		});
 	};
     /* prende i titoli, di tutte le segnalazioni effettuate dall'utente, dal server couchdb. 
      * Poi li inserisce nella listView */

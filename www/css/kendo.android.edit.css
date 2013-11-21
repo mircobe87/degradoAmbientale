@@ -8,3 +8,29 @@
 .km-android .km-view {
 	-webkit-flex-direction: column;
 }
+
+/* modifica lo stile del form di classe 'newformstyle' */
+.km-root .newformstyle .km-listview label {
+  width: 100%;
+}
+
+.km-wp .newformstyle .km-listview label {
+  color: #999;
+}
+
+.km-root .km-pane .km-view.newformstyle .km-listview input {
+  position: relative;
+  width: 100%;
+  right: 0;
+  margin-top: 0;
+  top: 0;
+}
+
+.km-root .km-wp .km-view.newformstyle .km-listview input {
+  margin-top: .2em;
+}
+
+.km-root .km-ios .km-view.newformstyle .km-listview input,
+.km-root .km-ios7 .km-view.newformstyle .km-listview input {
+  padding: .4em 0;
+}

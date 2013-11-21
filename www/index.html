@@ -67,7 +67,7 @@
 			</ul>
 		</div>
 		<!-- View Map -->
-        <div data-role="view" data-init="app.initMap" data-title="Degrado Ambientale" id="map-view" data-layout="default" data-stretch="true">
+        <div data-role="view"  data-title="Degrado Ambientale" id="map-view" data-layout="default" data-stretch="true" data-init="app.initMap">
        		<div id="map" style="width:100%;"></div>
         </div>
         <!-- View List -->
@@ -80,9 +80,69 @@
 		    <p>le API Cordova <b><span id="cordova">non</span></b> sono pronte</p>
         </div>
         <!-- View User -->
-        <div data-role="view" data-title="Degrado Ambientale" id="user-view" data-layout="default">
-		    <h2>View Opzioni Utente</h2>
-		    <p>le API Cordova <b><span id="cordova">non</span></b> sono pronte</p>
+        <div data-role="view" data-title="Degrado Ambientale" id="user-view" data-layout="default" data-use-native-scrolling="true" class="newformstyle" data-show="app.showOptionView" data-init="app.initOptionView">
+        	<form>
+        		<ul data-role="listview" data-style="inset">
+        			<li>
+						<p>
+							Un <b>nickname</b> serve per differenziarsi dagli altri utenti e comparir&agrave come
+							nome dell'autore di tutte le tue segnalazioni. Puoi cambiarlo in qualsiasi momento.
+						</p>
+        				<label>
+        					Nick Name:
+        					<input id="input-nick" type="search" placeholder="nickname" value="" />
+        				</label>
+        			</li>
+        			<li>
+						<p>
+							Un indirizzo <b>e-mail</b> &egrave utile per ricevere segnalazioni e informazioni sia
+							dall'amministratore che dagli altri utenti. L'indirizzo di posta elettronica &egrave
+							visibile nei dettagli di una segnalazione. Poi combiarlo in qualsiasi momento.
+						</p>
+        				<label>
+        					E-Mail:
+        					<input id="input-mail" type="search" placeholder="inidirizzo@email.com" value="" />
+        				</label>
+        			</li>
+        		</ul>
+        	</form>
+        	<p style="text-align: center;">
+	        	<a data-role="button" id="input-ok">Ok</a>
+        		<a data-role="button" id="input-cancel" href="#:back">Annulla</a>
+        	</p>
+        </div>
+
+		<!-- StartUp View -->
+		<div data-role="view" data-show="app.initStartupView" id="startup-view" data-use-native-scrolling="true" class="newformstyle">
+			<h1 style="text-align: center;">Configurazione Iniziale</h1>
+             <form>
+        		<ul data-role="listview" data-style="inset">
+        			<li>
+						<p>
+							Un <b>nickname</b> serve per differenziarsi dagli altri utenti e comparir&agrave come
+							nome dell'autore di tutte le tue segnalazioni. Puoi cambiarlo in qualsiasi momento.
+						</p>
+        				<label>
+        					Nick Name:
+        					<input id="startup-input-nick" type="search" placeholder="nickname" value="" />
+        				</label>
+        			</li>
+        			<li>
+						<p>
+							Un indirizzo <b>e-mail</b> &egrave utile per ricevere segnalazioni e informazioni sia
+							dall'amministratore che dagli altri utenti. L'indirizzo di posta elettronica &egrave
+							visibile nei dettagli di una segnalazione. Poi combiarlo in qualsiasi momento.
+						</p>
+        				<label>
+        					E-Mail:
+        					<input id="startup-input-mail" type="search" placeholder="inidirizzo@email.com" value="" />
+        				</label>
+        			</li>
+        		</ul>
+        	</form>
+        	<p style="text-align: center;">
+	        	<a data-role="button" id="startup-input-ok">Fatto</a>
+        	</p>
         </div>
 
         <!-- Layout di Default -->
