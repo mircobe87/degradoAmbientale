@@ -138,19 +138,20 @@ var app = new kendo.mobile.Application($(document).body);
     // Update DOM on a Received Event
     app.receivedEvent = function(id) {
         $("#cordova").text("");
+        georep.user.set({
            	name: 'nome',
            	password: 'password',
            	nick: 'nomignolo',
            	mail: 'nomignolo@mail.com'
          });
-       georep.db.setAdmin('pratesim', 'cou111Viola<3');
-       georep.db.setDBName('places');
-       georep.db.setURLServer({
-       	proto: 'http://',
-       	host: '192.168.0.118',
-       	port: 5984
-       });
-    };
+		georep.db.setAdmin('pratesim', 'cou111Viola<3');
+		georep.db.setDBName('places');
+		georep.db.setURLServer({
+			proto: 'http://',
+			host: '192.168.0.118',
+			port: 5984
+		});
+	};
     /* prende i titoli, di tutte le segnalazioni effettuate dall'utente, dal server couchdb. 
      * Poi li inserisce nella listView */
 	app.getDataFromServer = function(){
