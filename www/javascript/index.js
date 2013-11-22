@@ -238,17 +238,8 @@ var app = new kendo.mobile.Application($(document).body);
 	    		 app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
 	    			 $("#indirizzo").attr("value", indirizzo);
 	    		 });
-	    	 }
-	     });
-	     /* prendo il documento con i dati dell'utente che ha effettuato la segnalazione selezionata */
-	     georep.db.setDBName('_users');
-	     georep.db.getDoc(app.query.userId, false, function(err, data){
-	    	 if (err != undefined){
-	    		 alert(err);
-	    	 }
-	    	 else {
-	    		 $("#nickName").attr("value", data.nick);
-	    		 $("#mail").attr("value", data.mail);
+	    		 $("#nickName").attr("value", data.userNick);
+	    		 $("#mail").attr("value", data.userMail);
 	    	 }
 	     });
 	};
