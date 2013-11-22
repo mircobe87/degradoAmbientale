@@ -25,6 +25,23 @@ var app = new kendo.mobile.Application($(document).body);
 	//inizializza la mappa
 	app.initMap = function(e){
 	console.log("initmap");
+	
+		app.localMark = new google.maps.MarkerImage({
+			url: 'https://dl.dropboxusercontent.com/u/11078404/disastriMarkers/male-2.png',
+			size: new google.maps.Size(32,37),
+			anchor: new google.maps.Point(16, 37)
+		});
+		app.myMark = new google.maps.MarkerImage({
+			url: 'https://dl.dropboxusercontent.com/u/11078404/disastriMarkers/radiation.png',
+			size: new google.maps.Size(32,37),
+			anchor: new google.maps.Point(16, 37)
+		});
+		app.usersMark = new google.maps.MarkerImage({
+			url: 'https://dl.dropboxusercontent.com/u/11078404/disastriMarkers/radiation-white.png',
+			size: new google.maps.Size(32,37),
+			anchor: new google.maps.Point(16, 37)
+		});
+		console.log("marker caricati");
 		var mapElement = $("#map");
 		//var container = e.view.content;
 		
@@ -38,11 +55,12 @@ var app = new kendo.mobile.Application($(document).body);
 		var markOptions = {
 			clickable: false,
 			flat: true,
-			icon: '/img/male-2.png',
+		//	icon: app.localMark,
 			map: app.map,
 			position: new google.maps.LatLng(43.720741,10.408413)			
 		};
 		app.markMyLoc = new google.maps.Marker(markOptions);
+		app.markMyLoc.setIcon(app.localMark);
 		
 		navigator.geolocation.getCurrentPosition(function(pos){
 			var lat = pos.coords.latitude;
@@ -95,7 +113,7 @@ var app = new kendo.mobile.Application($(document).body);
 				app.clearMap(); // cancello i vecchi marker
 				
 				// setta l'handler dell'evento click per un marker
-				var setUpMarckerClick = function(marker){
+				var setUpMarkerClick = function(marker){
 					google.maps.event.addListener(marker, 'click', function(){
 						alert('hai cliccato sul marker con ID: ' + marker.docId);
 					});
@@ -114,12 +132,13 @@ var app = new kendo.mobile.Application($(document).body);
 							data.rows[i].geometry.coordinates[1], // latitudine  (asse y)
 							data.rows[i].geometry.coordinates[0]  // longitudine (asse x)
 						),
-						icon: (data.rows[i].value == georep.user._id)?'/img/radiation.png':'/img/radiation-white.png'
+						icon: (data.rows[i].value == georep.user._id) ? app.myMark : app.usersMark 
 					}
 					// metto nel vettore il nuovo marker
 					app.markers[i] = new google.maps.Marker(markerOpt);
+					console.log("marker "+i+" fatto");
 					// setto il marker per rispondere all'evento di click
-					setUpMarckerClick(app.markers[i]);
+					setUpMarkerClick(app.markers[i]);
 				}
 			}
 		});
@@ -208,7 +227,7 @@ var app = new kendo.mobile.Application($(document).body);
 			
 					app.configServer();
 					app.updateMap();
-					app.navigate('#map-view');
+					app.navigate('/');
 				}else{
 					alert('Impossibile contattare il server: aggiornamento non riuscito.');
 				}
