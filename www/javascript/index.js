@@ -17,11 +17,16 @@
  * under the License.
  */
 var app = new kendo.mobile.Application($(document).body);
+	
+	/* dataSource per la listView */
+	app.customerDataSource = new kendo.data.DataSource({ });
+	
 	/* oggetto che contiene i campi userId e docId di una particolare segnalazione*/
 	app.query = {
 			docId: "",
 			userId: ""
 	};
+	app.dbName = 'places';
 	//inizializza la mappa
 	app.initMap = function(e){
 		var mapElement = $("#map");
@@ -121,9 +126,28 @@ var app = new kendo.mobile.Application($(document).body);
 		});
 	};
 	
+	/* crea la listView per contenere le segnalazioni dell'utente */
+	app.createViewList = function (){
+		$("#listViewContent").kendoMobileListView({
+			dataSource: app.customerDataSource,
+			click: function(e) {
+				 /* Ogni elemento della lista è un oggetto del tipo {id: ..., key: ..., value: ...}
+				 */
+				app.query.docId = e.dataItem.id;
+				app.query.userId = e.dataItem.key;
+			    /* devo aprire la view per la visualizzazione completa della segnalazione con id e.dataItem.id */
+			    app.navigate("#view-repoDetail");
+			},
+			/* in questo modo all'interno della lista viene visualizzato solo il campo value 
+			 * (cioè il titolo della segnalazione). 
+			 */
+			template: "#:value#"
+		}); 
+	};
     // Application Constructor
     app.initialize = function() {
         this.bindEvents();
+        app.createViewList();
     };
     // Bind Event Listeners
     //
@@ -139,10 +163,11 @@ var app = new kendo.mobile.Application($(document).body);
     app.onDeviceReady = function() {
         app.receivedEvent('deviceready');
     };
+    
     // Update DOM on a Received Event
     app.receivedEvent = function(id) {
         $("#cordova").text("");
-        georep.user.set({
+       /* georep.user.set({
            	name: 'mibe',
            	password: '1234',
            	nick: 'mirco',
@@ -154,46 +179,47 @@ var app = new kendo.mobile.Application($(document).body);
        	proto: 'http://',
        	host: 'mibe.homepc.it',
        	port: 5984
+       });*/
+        georep.user.set({
+           	name: 'nome',
+           	password: 'password',
+           	nick: 'nomignolo',
+           	mail: 'nomignolo@mail.com'
+         });
+       georep.db.setAdmin('pratesim', 'cou111Viola<3');
+       georep.db.setDBName(app.dbName);
+       georep.db.setURLServer({
+       	proto: 'http://',
+       	host: '192.168.0.105',
+       	port: 5984
        });
     };
     /* prende i titoli, di tutte le segnalazioni effettuate dall'utente, dal server couchdb. 
      * Poi li inserisce nella listView */
 	app.getDataFromServer = function(){
-		georep.db.setDBName('testdb');
+		georep.db.setDBName(app.dbName);
 		georep.db.getUserDocs(georep.user._id, function(err, data){
 			if (err != undefined){
 				alert("Impossibile caricare i dati dal server");
 			}
 			else{
-				$("#listViewContent").kendoMobileListView({
-					/* data.rows è il vettore restituito dalla getUserDocs in caso di successo.
-					 * Ogni elemento del vettore è del tipo {id: ..., key: ..., value: ...}
-					 */
-					dataSource: data.rows,
-					click: function(e) {
-					     app.query.docId = e.dataItem.id;
-					     app.query.userId = e.dataItem.key;
-					     /* devo aprire la view per la visualizzazione completa della segnalazione con id e.dataItem.id */
-					     app.navigate("#view-repoDetail");
-					},
-					/* in questo modo all'interno della lista viene visualizzato solo il campo value 
-					 * (cioè il titolo della segnalazione). 
-					 */
-					template: "#:data.value#"
-				});
+				/* inserisce i dati contenuti in data.rows nella listView.
+				 * data.rows è il vettore restituito dalla getUserDocs in caso di successo.
+				 * Ogni elemento del vettore è del tipo {id: ..., key: ..., value: ...}
+				 */
+				app.customerDataSource.data(data.rows);
 			}
 		});
 	};
 	
 	/* carica la segnalazione completa */
 	app.loadRepo = function(e){
-	     georep.db.setDBName('testdb');
+	     georep.db.setDBName(app.dbName);
 	     georep.db.getDoc(app.query.docId, true, function(err, data){
 	    	 if (err != undefined){
 	    		 alert(err);
 	    	 }
 	    	 else {
-	    		 console.log(data);
 	    		 $("#descrizione").attr("value", data.msg);
 	    		 $("#repoDetail-title").text(data.title);
 	    		 $("#repoImg").attr("src", "data:"+data._attachments.img.content_type+";base64,"+data._attachments.img.data);
@@ -211,3 +237,4 @@ var app = new kendo.mobile.Application($(document).body);
 	    	 }
 	     });
 	};
+	
