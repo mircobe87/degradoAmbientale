@@ -68,8 +68,8 @@ var app = new kendo.mobile.Application($(document).body);
 		}
 		app.markers.length = 0; // cancella i riferimenti dei marker
 	};
-	// aggiorna i marker sulla mappa
 	
+	// aggiorna i marker sulla mappa
 	app.updateMap = function(){
 		console.log('hai mosso la mappa');
 		// rileva i limiti visualizzati nella mappa e costruisce i 2 angoli
@@ -89,7 +89,7 @@ var app = new kendo.mobile.Application($(document).body);
 		georep.db.setDBName('testdb');
 		georep.db.getDocsInBox(bl_corner, tr_corner, function(err, data){
 			if(err){
-				alert('Impossobole contattare il server');
+				alert('updateMap: Impossibile contattare il server');
 			}else{
 			
 				app.clearMap(); // cancello i vecchi marker
@@ -128,7 +128,55 @@ var app = new kendo.mobile.Application($(document).body);
 	// carica la view di startup se e' il primo avvio
 	// altrimenti carica la mappa.
 	app.loader = function() {
-		if(!localStorage.userNick || !localStorage.userMail){
+		if(!localStorage.userNick || localStorage.userNick == 'fakeNick' ||
+		   !localStorage.userMail || localStorage.userMail == 'fakeMail' ){
+			// a questo punto o e' il primo avvio oppure sono stati cancellati 
+			// i dati della app oppure è stato creato un utente non si e' siusciti
+			// ad aggiornare le sue opzioni.
+			
+			// creo delle opzioni 'fake' e controllo se l'utente esiste sul server
+			localStorage.userNick='fakeNick';
+			localStorage.userMail='fakeMail';
+			app.configServer();
+			georep.user.check(function(err, data){
+				if(!err){
+					if(data.isRegistered){
+						// l'utente esiste sul server quindi bisogna scaricare le sue info
+						// per correggere le opzioni 'fake'.
+						
+						georep.user.getRemote(function(err,data){
+							if(!err){
+								if(data.nick != 'fakeNick' && data.mail != 'fakeMail'){
+									localStorage.userNick=data.nick;
+									localStorage.userMail=data.mail;
+									app.configServer();
+									app.navigate('/');
+								}else{
+									app.navigate('#startup-view');
+								}
+							}else{
+								alert('Impossibile contattare il server.');
+							}
+						});
+						
+					}else{
+						// creo un nuovo utente con opzioni 'fake'
+						georep.user.signup(function(err,data){
+							if(!err){
+								// utente creato.
+								// ora bisogna chiedere all'utente le opzioni e poi usarle
+								// per un aggiornamento.
+								app.navigate('#startup-view');
+							}else{
+								alert('Impossibile comunicare con il server: utente non creato');
+								localStorage.clear();
+							}
+						});
+					}
+				}else{
+					alert('loader: Impossibile contattare il server');
+				}
+			});
 			app.navigate('#startup-view');
 			//$('#startup-input-ok').on('click',app.saveOptions);
 		} else {
@@ -160,7 +208,7 @@ var app = new kendo.mobile.Application($(document).body);
 			
 					app.configServer();
 					app.updateMap();
-					app.navigate('#:back');
+					app.navigate('#map-view');
 				}else{
 					alert('Impossibile contattare il server: aggiornamento non riuscito.');
 				}
@@ -198,9 +246,10 @@ var app = new kendo.mobile.Application($(document).body);
 	// configura tutte le credenziali per la cominicazione con il server
 	// del database.
 	app.configServer = function(){
+		//console.log(window.device);
 		georep.user.set({
-	       	name: 'mibe',
-	       	password: '1234',
+	       	name: device.uuid,
+	       	password: device.uuid,
 	       	nick: localStorage.userNick,
 	       	mail: localStorage.userMail
 	    });

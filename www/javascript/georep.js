@@ -295,7 +295,9 @@ var georep = {
 				throw 'Parametro "doc" non valido.';
 			} else {
 				var newDoc = {};
-				newDoc.user = georep.user._id;
+				newDoc.userId = georep.user._id;
+				newDoc.userNick = georep.user.nick;
+				newDoc.userMail = georep.user.mail;
 				newDoc.title = doc.title;
 				newDoc.msg = doc.msg;
 				newDoc.loc = doc.loc;
@@ -375,6 +377,52 @@ var georep = {
 								errorThrown: errorThrown
 							}, undefined);
 						}
+					}
+				});
+			}
+		},
+		/** 
+		 * Recupera le informazioni d'utente dal server.
+		 *
+		 * callback ( function(err, data) ):
+		 * 		funzione di callback, NON OPZIONALE, chiamata sia in caso di errore che di successo;
+		 *         err: oggetto che descrive l'errore, se si è verificato;
+		 *        data: (object) le info sull'utente
+		 *              {
+		 *                  _id:             (string)
+		 *                  _rev:            (string)
+		 *                  derived_key:     (string)
+		 *                  iterations:      (number)
+		 *                  mail:            (string)
+		 *                  name:            (string)
+		 *                  nick:            (string)
+		 *                  password_scheme: (string)
+		 *                  roles:           (array)
+		 *                  salt:            (string)
+		 *                  type:            (string)
+		 *              }
+		 */
+		getRemote: function(callback){
+			/* callback è obbligatorio perchè checkUser() chiama $.ajax() che è asincrona */
+			if( arguments.length != 1){
+				throw 'getRemote() richiede un argomento: callback (function(err, data)).';	
+			} else if (typeof callback != 'function'){
+				throw 'Parametro non valido: callback deve essere \'function\'.'
+			} else {
+				$.ajax({
+					url: georep.db.proto + georep.db.host + ':' +
+						 georep.db.port + '/_users/' + georep.user._id,
+					tyep: 'GET',
+					headers: {
+						Accept: 'application/json',
+						Authorization: 'Basic ' + georep.user.base64
+					},
+					dataType: 'json',
+					success: function(data){
+						callback(undefined, data);
+					},
+					error: function(jqXHR, textStatus, errorThrown){
+						callback({jqXHR: jqXHR, textStatus: textStatus, errorThrown: errorThrown}, undefined);
 					}
 				});
 			}
@@ -499,21 +547,13 @@ var georep = {
 			} else if (!georep.db.isConfigured()) {
 					throw 'Impossibile contattare il database: server non configurato.';
 			} else {
-				$.ajax({
-					url: georep.db.proto + georep.db.host + ':' +
-						 georep.db.port + '/_users/' + georep.user._id,
-					headers: {
-						Accept: 'application/json',
-						Authorization: 'Basic ' + georep.user.base64
-					},
-					dataType: 'json',
-					success: function(data){
-						console.log(data);
+				this.getRemote(function(err,data){
+					if(!err){
 						var rev = data._rev;
 						$.ajax({
 							url: georep.db.proto + georep.db.host + ':' +
-						         georep.db.port + '/_users/' + georep.user._id +
-						         '?rev=' + rev,
+								 georep.db.port + '/_users/' + georep.user._id +
+								 '?rev=' + rev,
 							type: 'PUT',
 							headers: {
 								Authorization: 'Basic ' + georep.user.base64
@@ -542,10 +582,9 @@ var georep = {
 								}
 							}
 						});
-					},
-					error: function(jqXHR, textStatus, errorThrown){
+					}else{
 						if (callback){
-							callback({jqXHR: jqXHR, textStatus: textStatus, errorThrown: errorThrown}, undefined);
+							callback(err, undefined);
 						}
 					}
 				});
