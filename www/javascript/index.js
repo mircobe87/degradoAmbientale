@@ -212,6 +212,18 @@ var app = new kendo.mobile.Application($(document).body);
 		});
 	};
 	
+	/* permette di ottenere un indirizzo a partite da una latitudine e una longitudine */
+	app.coordsToAddress = function (lat, lng, callback){
+		var latlng = new google.maps.LatLng(lat, lng);
+	    var geocoder = new google.maps.Geocoder();
+	    geocoder.geocode({'latLng': latlng}, function(results, status) {
+	      if (status == google.maps.GeocoderStatus.OK) {
+	    	  callback(results[0].formatted_address);
+	      } else {
+	        alert("Geocoder failed due to: " + status);
+	      }
+	    });
+	}
 	/* carica la segnalazione completa */
 	app.loadRepo = function(e){
 	     georep.db.setDBName(app.dbName);
@@ -223,6 +235,9 @@ var app = new kendo.mobile.Application($(document).body);
 	    		 $("#descrizione").attr("value", data.msg);
 	    		 $("#repoDetail-title").text(data.title);
 	    		 $("#repoImg").attr("src", "data:"+data._attachments.img.content_type+";base64,"+data._attachments.img.data);
+	    		 app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
+	    			 $("#indirizzo").attr("value", indirizzo);
+	    		 });
 	    	 }
 	     });
 	     /* prendo il documento con i dati dell'utente che ha effettuato la segnalazione selezionata */
