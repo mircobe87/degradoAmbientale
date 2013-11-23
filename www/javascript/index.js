@@ -25,31 +25,18 @@ var app = new kendo.mobile.Application($(document).body,{
 app.FAKE_MAIL = '-:RkFLRV9NQUlM:-';
 app.FAKE_NICK = '-:RkFLRV9OSUNL:-';
 
+app.MYLOC_MARKER = 'img/male-2.png';
+app.MYDOCS_MARKER = 'img/radiation.png';
+app.OTHERDOCS_MARKER = 'img/radiation-white.png';
+
 	app.provaInitMap = function(){
 		console.log('prova init mappa');
 	};
 
 	//inizializza la mappa
 	app.initMap = function(e){
-	console.log("initmap");
-	
-		app.localMark = new google.maps.MarkerImage({
-			url: 'https://dl.dropboxusercontent.com/u/11078404/disastriMarkers/male-2.png',
-			size: new google.maps.Size(32,37),
-			anchor: new google.maps.Point(16, 37)
-		});
-		app.myMark = new google.maps.MarkerImage({
-			url: 'https://dl.dropboxusercontent.com/u/11078404/disastriMarkers/radiation.png',
-			size: new google.maps.Size(32,37),
-			anchor: new google.maps.Point(16, 37)
-		});
-		app.usersMark = new google.maps.MarkerImage({
-			url: 'https://dl.dropboxusercontent.com/u/11078404/disastriMarkers/radiation-white.png',
-			size: new google.maps.Size(32,37),
-			anchor: new google.maps.Point(16, 37)
-		});
+		console.log("initmap");
 		
-		console.log("marker caricati");
 		var mapElement = $("#map")[0];
 		//var container = e.view.content;
 		
@@ -61,16 +48,15 @@ app.FAKE_NICK = '-:RkFLRV9OSUNL:-';
 		console.log('mappa istanziata');
 		/*app.geoMarker = new GeolocationMarker(app.map);*/
 		
-		/*
+		
 		var markOptions = {
 			clickable: false,
 			flat: true,
-		//	icon: app.localMark,
+			icon: app.MYLOC_MARKER,
 			map: app.map,
 			position: new google.maps.LatLng(43.720741,10.408413)			
 		};
 		app.markMyLoc = new google.maps.Marker(markOptions);
-		app.markMyLoc.setIcon(app.localMark);
 		
 		navigator.geolocation.getCurrentPosition(function(pos){
 			var lat = pos.coords.latitude;
@@ -80,7 +66,7 @@ app.FAKE_NICK = '-:RkFLRV9OSUNL:-';
 			app.map.setCenter(newPosition);
 			app.markMyLoc.setPosition(newPosition);
 		});
-		*/
+
 		// aggiorna il contenuto della mappa quando termina il trascinamento.
 		app.mapListeners.push(google.maps.event.addListener(app.map,'dragend',app.updateMap));
 		// aggiorna il contenuto della mappa quando cambia il livello di zoom.
@@ -145,7 +131,7 @@ app.FAKE_NICK = '-:RkFLRV9OSUNL:-';
 							data.rows[i].geometry.coordinates[1], // latitudine  (asse y)
 							data.rows[i].geometry.coordinates[0]  // longitudine (asse x)
 						),
-						icon: (data.rows[i].value == georep.user._id) ? app.myMark : app.usersMark 
+						icon: (data.rows[i].value == georep.user._id) ? app.MYDOCS_MARKER : app.OTHERDOCS_MARKER 
 					}
 					// metto nel vettore il nuovo marker
 					app.markers[i] = new google.maps.Marker(markerOpt);
