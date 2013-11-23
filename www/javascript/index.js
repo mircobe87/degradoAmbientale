@@ -16,7 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-var app = new kendo.mobile.Application($(document).body);
+var app = new kendo.mobile.Application($(document).body,{
+	init: function(){
+		app.navigate('#user-view');
+	}
+});
+
+app.FAKE_MAIL = '-:RkFLRV9NQUlM:-';
+app.FAKE_NICK = '-:RkFLRV9OSUNL:-';
 
 	app.provaInitMap = function(){
 		console.log('prova init mappa');
@@ -41,17 +48,20 @@ var app = new kendo.mobile.Application($(document).body);
 			size: new google.maps.Size(32,37),
 			anchor: new google.maps.Point(16, 37)
 		});
+		
 		console.log("marker caricati");
-		var mapElement = $("#map");
+		var mapElement = $("#map")[0];
 		//var container = e.view.content;
 		
 		var mapOptions = {
 			center: new google.maps.LatLng(43.720741,10.408413),
 			zoom: 10
 		};
-		app.map = new google.maps.Map(mapElement[0], mapOptions);
+		app.map = new google.maps.Map(mapElement, mapOptions);
+		console.log('mappa istanziata');
 		/*app.geoMarker = new GeolocationMarker(app.map);*/
 		
+		/*
 		var markOptions = {
 			clickable: false,
 			flat: true,
@@ -70,14 +80,17 @@ var app = new kendo.mobile.Application($(document).body);
 			app.map.setCenter(newPosition);
 			app.markMyLoc.setPosition(newPosition);
 		});
+		*/
 		// aggiorna il contenuto della mappa quando termina il trascinamento.
-		google.maps.event.addListener(app.map,'dragend',app.updateMap);
+		app.mapListeners.push(google.maps.event.addListener(app.map,'dragend',app.updateMap));
 		// aggiorna il contenuto della mappa quando cambia il livello di zoom.
-		google.maps.event.addListener(app.map,'zoom_changed',app.updateMap);
+		app.mapListeners.push(google.maps.event.addListener(app.map,'zoom_changed',app.updateMap));
 	};
-	
+
 	// vettore dei marker delle segnalazioni sulla mappa
 	app.markers = [];
+	
+	app.mapListeners = [];
 	
 	// rimuove tutti i marker dalla mappa e dalla memoria
 	app.clearMap = function(){
@@ -147,45 +160,54 @@ var app = new kendo.mobile.Application($(document).body);
 	// carica la view di startup se e' il primo avvio
 	// altrimenti carica la mappa.
 	app.loader = function() {
-		if(!localStorage.userNick || localStorage.userNick == 'fakeNick' ||
-		   !localStorage.userMail || localStorage.userMail == 'fakeMail' ){
+		if(!localStorage.userNick || localStorage.userNick == app.FAKE_NICK ||
+		   !localStorage.userMail || localStorage.userMail == app.FAKE_MAIL ){
+		   console.log('nuovo utente o incompleto');
 			// a questo punto o e' il primo avvio oppure sono stati cancellati 
 			// i dati della app oppure è stato creato un utente non si e' siusciti
 			// ad aggiornare le sue opzioni.
 			
 			// creo delle opzioni 'fake' e controllo se l'utente esiste sul server
-			localStorage.userNick='fakeNick';
-			localStorage.userMail='fakeMail';
+			localStorage.userNick = app.FAKE_NICK;
+			localStorage.userMail = app.FAKE_MAIL;
 			app.configServer();
 			georep.user.check(function(err, data){
 				if(!err){
 					if(data.isRegistered){
+						console.log('utente già registrato');
 						// l'utente esiste sul server quindi bisogna scaricare le sue info
 						// per correggere le opzioni 'fake'.
 						
 						georep.user.getRemote(function(err,data){
 							if(!err){
-								if(data.nick != 'fakeNick' && data.mail != 'fakeMail'){
+								if(data.nick != app.FAKE_NICK && data.mail != app.FAKE_MAIL){
+									console.log('dati utente registrato recuperati');
 									localStorage.userNick=data.nick;
 									localStorage.userMail=data.mail;
 									app.configServer();
-									app.navigate('/');
+									
+									app.initMap();
+									
+									app.navigate('#map-view');
 								}else{
-									app.navigate('#startup-view');
+									console.log('utente registrato ma da completare');
+									//app.navigate('#startup-view');
 								}
 							}else{
-								alert('Impossibile contattare il server.');
+								alert('Impossibile contattare il server per scaricare le opzioni dell\'utente.');
 							}
 						});
 						
 					}else{
+						console.log('utente nuovo');
 						// creo un nuovo utente con opzioni 'fake'
 						georep.user.signup(function(err,data){
 							if(!err){
+								console.log('utente creato sul server');
 								// utente creato.
 								// ora bisogna chiedere all'utente le opzioni e poi usarle
 								// per un aggiornamento.
-								app.navigate('#startup-view');
+								//app.navigate('#startup-view');
 							}else{
 								alert('Impossibile comunicare con il server: utente non creato');
 								localStorage.clear();
@@ -196,12 +218,12 @@ var app = new kendo.mobile.Application($(document).body);
 					alert('loader: Impossibile contattare il server');
 				}
 			});
-			app.navigate('#startup-view');
 			//$('#startup-input-ok').on('click',app.saveOptions);
 		} else {
 			app.configServer();
-			app.updateMap();
-			app.navigate('#:back');
+			//app.updateMap();
+			app.initMap();
+			app.navigate('#map-view');
 		}
 	};
 	
@@ -226,8 +248,10 @@ var app = new kendo.mobile.Application($(document).body);
 					console.log("salvato in locale 'mail': " + localStorage.userMail);
 			
 					app.configServer();
-					app.updateMap();
-					app.navigate('/');
+					
+					if(!app.map) app.initMap();
+					//app.updateMap();
+					app.navigate('#map-view');
 				}else{
 					alert('Impossibile contattare il server: aggiornamento non riuscito.');
 				}
@@ -240,25 +264,28 @@ var app = new kendo.mobile.Application($(document).body);
 			var mail = $('#startup-input-mail')[0].value;
 			app.saveOptions(nick, mail);
 		});
+		app.loader();
 	};
 	app.showOptionView = function(){
-		var currentNick = localStorage.userNick;
-		var currentMail = localStorage.userMail;
+		var currentNick = (localStorage.userNick == app.FAKE_NICK)?'':localStorage.userNick;
+		var currentMail = (localStorage.userMail == app.FAKE_MAIL)?'':localStorage.userMail;
 		$('#input-nick').attr('value',currentNick);
 		$('#input-mail').attr('value',currentMail);
 	};
 	app.initOptionView = function(){
 		$('#input-ok').on('click', function(){
-			var currentNick = localStorage.userNick;
-			var currentMail = localStorage.userMail;
+			var currentNick = (localStorage.userNick == app.FAKE_NICK)?'':localStorage.userNick;
+			var currentMail = (localStorage.userMail == app.FAKE_MAIL)?'':localStorage.userMail;
 			var newNick = $('#input-nick')[0].value;
 			var newMail = $('#input-mail')[0].value;
 			console.log('newNick: ' + newNick);
 			console.log('newMail: ' + newMail);
 			if(newNick != currentNick || newMail != currentMail)
 				app.saveOptions(newNick, newMail);
-			else
-				app.navigate('#:back');
+			else {
+				
+				app.navigate('#map-view');	
+			}
 		});
 	};
 	
@@ -331,3 +358,5 @@ var app = new kendo.mobile.Application($(document).body);
 			}
 		});
 	};
+	
+	window.device = {uuid: "mirco"};
