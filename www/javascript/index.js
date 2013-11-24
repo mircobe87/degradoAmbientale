@@ -72,7 +72,7 @@ app.initMap = function(e){
 		zoom: 10
 	};
 	
-	/** instanzia la mappa */
+	/** istanzia la mappa */
 	app.map = new google.maps.Map(mapElement, mapOptions);
 	//console.log('mappa istanziata');
 	/*app.geoMarker = new GeolocationMarker(app.map);*/
@@ -86,7 +86,7 @@ app.initMap = function(e){
 		position: new google.maps.LatLng(43.720741,10.408413)			
 	};
 
-	/** instanzio il segnaposto per la posizione attuale */
+	/** istanzio il segnaposto per la posizione attuale */
 	app.markMyLoc = new google.maps.Marker(markOptions);
 	
 	/**
@@ -214,8 +214,8 @@ app.getDataFromServer = function(){
 		}
 		else{
 			$("#listViewContent").kendoMobileListView({
-				/* data.rows è il vettore restituito dalla getUserDocs in caso di successo.
-				 * Ogni elemento del vettore è del tipo {id: ..., key: ..., value: ...}
+				/* data.rows e' il vettore restituito dalla getUserDocs in caso di successo.
+				 * Ogni elemento del vettore e' del tipo {id: ..., key: ..., value: ...}
 				 */
 				dataSource: data.rows,
 				click: function(e) {
@@ -224,7 +224,7 @@ app.getDataFromServer = function(){
 				     
 				},
 				/* in questo modo all'interno della lista viene visualizzato solo il campo value 
-				 * (cioè il titolo della segnalazione). 
+				 * (cioe' il titolo della segnalazione). 
 				 */
 				template: "#:data.value#"
 			});
@@ -268,12 +268,12 @@ app.configServer = function(){
 };
 
 /**
- * Eseguita a tempo di inizializzazione della view del edit delle indo dell'utente.
+ * Eseguita a tempo di inizializzazione della view del edit delle info dell'utente.
  *
- * Configura il getore dell'evento 'click' del bottone della view delle info.
- * Il getore recupera le info locali e quelle immesse dall'utente e le confronta:
- * se ci sono differense allora scatena l'aggiornamento di tali informazioni,
- * altrimenti non considere i valori immessi e torna alla mappa.
+ * Configura il gestore dell'evento 'click' del bottone della view delle info.
+ * Il gestore recupera le info locali e quelle immesse dall'utente e le confronta:
+ * se ci sono differenze allora scatena l'aggiornamento di tali informazioni,
+ * altrimenti non considera i valori immessi e torna alla mappa.
  */
 app.initOptionView = function(){
 	$('#input-ok').on('click', function(){
@@ -328,7 +328,7 @@ app.loader = function() {
 	   console.log('nuovo utente o incompleto');
 		/**
 		 * a questo punto o e' il primo avvio oppure sono stati cancellati 
-		 * i dati della app oppure è stato creato un utente non si e' siusciti
+		 * i dati della app oppure e' stato creato un utente non si e' riusciti
 		 * ad aggiornare le sue opzioni.
 		 */
 		
@@ -341,7 +341,7 @@ app.loader = function() {
 		georep.user.check(function(err, data){
 			if(!err){
 				if(data.isRegistered){
-					//console.log('utente già registrato');
+					//console.log('utente gia' registrato');
 					/**
 					 * l'utente esiste sul server quindi bisogna scaricare le sue info
 					 * per correggere le opzioni 'fake'.
@@ -361,7 +361,7 @@ app.loader = function() {
 								app.navigate('#map-view');
 							}else{
 								/**
-								 * se i dati scaricati sono da sistemare si rimene qui nella
+								 * se i dati scaricati sono da sistemare si rimane qui nella
 								 * view delle opzioni
 								 */
 								//console.log('utente registrato ma da completare');
@@ -374,7 +374,7 @@ app.loader = function() {
 				}else{
 					/**
 					 * L'utente non esiste quindi bisogna registrarlo
-					 * Viene inizialmente fatto un utente con info 'fake' e succeccivamente si
+					 * Viene inizialmente fatto un utente con info 'fake' e successivamente si
 					 * aggiornano le sue informazioni.
 					 */
 					console.log('utente nuovo');
@@ -384,14 +384,14 @@ app.loader = function() {
 							console.log('utente creato sul server');
 							/**
 							 * A questo punto l'utente e' stato creato ma bisogna raccoglie le
-							 * le informazine su email e nick e quindi si rimane in questa view
+							 * le informazione su email e nick e quindi si rimane in questa view
 							 * delle opzioni.
 							 */
 						}else{
 							alert('Impossibile comunicare con il server: utente non creato');
 							/**
 							 * non si e' riusciti a creare l'utente nuovo sul server quindi si
-							 * eliminano le info 'fake' locali così da ripulire l'ambiente per
+							 * eliminano le info 'fake' locali cosi' da ripulire l'ambiente per
 							 * il prossimo avvio della app.
 							 */
 							 localStorage.clear();
@@ -403,11 +403,10 @@ app.loader = function() {
 				alert('loader: Impossibile contattare il server');
 			}
 		});
-		//$('#startup-input-ok').on('click',app.saveOptions);
 	} else {
 		/**
 		 * localmente sono presenti info non 'fake' e quindi si presume che l'utente
-		 * sia già registrato sul server.
+		 * sia gia' registrato sul server.
 		 * Si configura il sistema con queste info e ci si sposta sulla view della mappa
 		 */
 		app.configServer();
@@ -421,13 +420,11 @@ app.loader = function() {
  * con i valori passatole come parametri
  */ 
 app.saveOptions = function(nick, mail){
-//		var nick = $('#startup-input-nick')[0].value;
-//		var mail = $('#startup-input-mail')[0].value;
 	if (!nick || !mail)
 		alert('Inserire NickName e E-Mail');
 	else {
 		/**
-		 * Aggiorna le info dell'utente sia sul server che locali (cofigurazioni
+		 * Aggiorna le info dell'utente sia sul server che locali (configurazioni
 		 * di georep).
 		 */
 		georep.user.update({
@@ -438,7 +435,7 @@ app.saveOptions = function(nick, mail){
 		},function(err, data){
 			if(!err){
 				/**
-				 * Se l'utetne e' stato aggiornato memorizzo localmente in modo
+				 * Se l'utente e' stato aggiornato memorizzo localmente in modo
 				 * 'permanente' le nuove informazioni.
 				 */
 				localStorage.userNick = nick;
@@ -451,8 +448,8 @@ app.saveOptions = function(nick, mail){
 				app.configServer();
 				
 				/**
-				 * Questo controllo ha senso perchè questa funzione puo' venir chiamata
-				 * anche più volte nella app e quindi evito di fare del casino inizializzando
+				 * Questo controllo ha senso perche' questa funzione puo' venir chiamata
+				 * anche piu' volte nella app e quindi evito di fare del casino inizializzando
 				 * piu' volte la mappa
 				 */
 				if(!app.map)
@@ -490,5 +487,5 @@ app.onDeviceReady = function() {
     app.loader();
 };
 
-//-------------------- per la simulaizone nel browser --------------------------	
+//-------------------- per la simulazione nel browser --------------------------	
 //window.device = {uuid: "betta"};
