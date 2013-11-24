@@ -54,6 +54,8 @@ app.markMyLoc;
  */
 app.markers = [];
 
+app.markCluster;
+
 /**
  * Inizializza la mappa nel DOM con centro al 'Polo Fibonacci', successivamente
  * crea un segnaposto per la posizione attuale e lo setta ancora sul 'Polo
@@ -89,6 +91,13 @@ app.initMap = function(e){
 	/** istanzio il segnaposto per la posizione attuale */
 	app.markMyLoc = new google.maps.Marker(markOptions);
 	
+	var markClusterOptions = {
+		averageCenter: true,
+		gridSize: 24
+	};
+	
+	app.markCluster = new MarkerClusterer(app.map,[],markClusterOptions);
+	
 	/**
 	 * recupera la posizione attuale e riposizione il centro della mappa e il
 	 * segnaposto.
@@ -118,6 +127,7 @@ app.clearMap = function(){
 	}
 	/** cancella i riferimenti dei marker */
 	app.markers.length = 0;
+	app.markCluster.clearMarkers();
 };
 
 /**
@@ -199,6 +209,7 @@ app.updateMap = function(){
 				/** setto il marker per rispondere all'evento di 'click' */
 				app.setUpMarkerClick(app.markers[i]);
 			}
+			app.markCluster.addMarkers(app.markers);
 		}
 	});
 };
@@ -488,4 +499,4 @@ app.onDeviceReady = function() {
 };
 
 //-------------------- per la simulazione nel browser --------------------------	
-//window.device = {uuid: "betta"};
+window.device = {uuid: "betta"};
