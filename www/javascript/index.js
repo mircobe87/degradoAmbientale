@@ -122,7 +122,7 @@ app.initMap = function(e){
 	 */
 	google.maps.event.addListener(app.map,'idle',app.updateMap);
 };
-	
+
 /**
  * Rimuove tutti i marker dalla mappa e dalla memoria.
  */
@@ -149,7 +149,7 @@ app.setUpMarkerClick = function(marker){
 	/** setta lo handler per l'evento */
 	google.maps.event.addListener(marker, 'click', onClickHandler);
 };
-
+	
 /**
  * Aggiorna i marker sulla mappa.
  */
@@ -223,31 +223,82 @@ app.updateMap = function(){
 
 // sezione della LISTA SEGNALAZIONI --------------------------------------------
 
+/* dataSource per la listView */
+app.customerDataSource = new kendo.data.DataSource({ });
+	
+/* oggetto che contiene i campi userId e docId di una particolare segnalazione*/
+app.query = {
+	docId: "",
+	userId: ""
+};
+
+/* crea la listView per contenere le segnalazioni dell'utente */
+app.createViewList = function (){
+	$("#listViewContent").kendoMobileListView({
+		dataSource: app.customerDataSource,
+		click: function(e) {
+			 /* Ogni elemento della lista è un oggetto del tipo {id: ..., key: ..., value: ...}
+			 */
+			app.query.docId = e.dataItem.id;
+			app.query.userId = e.dataItem.key;
+		    /* devo aprire la view per la visualizzazione completa della segnalazione con id e.dataItem.id */
+		    app.navigate("#view-repoDetail");
+		},
+		/* in questo modo all'interno della lista viene visualizzato solo il campo value 
+		 * (cioè il titolo della segnalazione). 
+		 */
+		template: "#:value#"
+	}); 
+};
+
 /* prende i titoli, di tutte le segnalazioni effettuate dall'utente, dal server couchdb. 
  * Poi li inserisce nella listView */
 app.getDataFromServer = function(){
+	georep.db.setDBName(app.dbName);
 	georep.db.getUserDocs(georep.user._id, function(err, data){
 		if (err != undefined){
 			alert("Impossibile caricare i dati dal server");
 		}
 		else{
-			$("#listViewContent").kendoMobileListView({
-				/* data.rows e' il vettore restituito dalla getUserDocs in caso di successo.
-				 * Ogni elemento del vettore e' del tipo {id: ..., key: ..., value: ...}
-				 */
-				dataSource: data.rows,
-				click: function(e) {
-				     console.log("value: " + e.dataItem.value + " id: " + e.dataItem.id);
-				     /* devo aprire la view per la visualizzazione completa della segnalazione con id e.dataItem.id */
-				     
-				},
-				/* in questo modo all'interno della lista viene visualizzato solo il campo value 
-				 * (cioe' il titolo della segnalazione). 
-				 */
-				template: "#:data.value#"
-			});
+			/* inserisce i dati contenuti in data.rows nella listView.
+			 * data.rows è il vettore restituito dalla getUserDocs in caso di successo.
+			 * Ogni elemento del vettore è del tipo {id: ..., key: ..., value: ...}
+			 */
+			app.customerDataSource.data(data.rows);
 		}
 	});
+};
+
+/* permette di ottenere un indirizzo a partite da una latitudine e una longitudine */
+app.coordsToAddress = function (lat, lng, callback){
+	var latlng = new google.maps.LatLng(lat, lng);
+    var geocoder = new google.maps.Geocoder();
+    geocoder.geocode({'latLng': latlng}, function(results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+    	  callback(results[0].formatted_address);
+      } else {
+        alert("Geocoder failed due to: " + status);
+      }
+    });
+}
+/* carica la segnalazione completa */
+app.loadRepo = function(e){
+     georep.db.setDBName(app.dbName);
+     georep.db.getDoc(app.query.docId, true, function(err, data){
+    	 if (err != undefined){
+    		 alert(err);
+    	 }
+    	 else {
+    		 $("#descrizione").attr("value", data.msg);
+    		 $("#repoDetail-title").text(data.title);
+    		 $("#repoImg").attr("src", "data:"+data._attachments.img.content_type+";base64,"+data._attachments.img.data);
+    		 app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
+    			 $("#indirizzo").attr("value", indirizzo);
+    		 });
+    		 $("#nickName").attr("value", data.userNick);
+    		 $("#mail").attr("value", data.userMail);
+    	 }
+     });
 };
 
 // ------------------ sezione AVVIO & OPZIONI ----------------------------------
@@ -479,13 +530,14 @@ app.saveOptions = function(nick, mail){
 		});
 	}
 };
-	
+
 /**
  * Funzione che deve essere eseguita per prima quando l'intera pagina e stata
  * completamente caricata.
  */
 app.initialize = function() {
     this.bindEvents();
+	app.createViewList();
 };
 
 /**
@@ -496,7 +548,7 @@ app.initialize = function() {
 app.bindEvents = function() {
     document.addEventListener('deviceready', this.onDeviceReady, false);
 };
-    
+
 /**
  * Gestore dell'evento 'deviceready' eseguito quando le api cordova sono pronte.
  * In questo caso scatena il controllo dell'utente ed eventuale registrazione.
