@@ -54,6 +54,9 @@ app.markMyLoc;
  */
 app.markers = [];
 
+/**
+ * Riferimento al markCluster della mappa una volta istanziato.
+ */
 app.markCluster;
 
 /**
@@ -91,11 +94,13 @@ app.initMap = function(e){
 	/** istanzio il segnaposto per la posizione attuale */
 	app.markMyLoc = new google.maps.Marker(markOptions);
 	
+	/** configurazione del markClaster */
 	var markClusterOptions = {
 		averageCenter: true,
 		gridSize: 24
 	};
 	
+	/** istanzion un markCluster per la mappa senza segnaposti */
 	app.markCluster = new MarkerClusterer(app.map,[],markClusterOptions);
 	
 	/**
@@ -127,6 +132,7 @@ app.clearMap = function(){
 	}
 	/** cancella i riferimenti dei marker */
 	app.markers.length = 0;
+	/** elimina i riferimenti che il claster ha dei marker */
 	app.markCluster.clearMarkers();
 };
 
@@ -209,6 +215,7 @@ app.updateMap = function(){
 				/** setto il marker per rispondere all'evento di 'click' */
 				app.setUpMarkerClick(app.markers[i]);
 			}
+			/** aggiungo i marker al cluster */
 			app.markCluster.addMarkers(app.markers);
 		}
 	});
