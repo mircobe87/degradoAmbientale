@@ -145,6 +145,8 @@ app.setUpMarkerClick = function(marker){
 	/** handler dell'evento */
 	var onClickHandler = function(){
 		alert('hai cliccato sul marker con ID: ' + marker.docId);
+		app.query.docId = marker.docId;
+		app.navigate('#view-repoDetail');
 	}
 	/** setta lo handler per l'evento */
 	google.maps.event.addListener(marker, 'click', onClickHandler);
@@ -254,7 +256,7 @@ app.createViewList = function (){
 /* prende i titoli, di tutte le segnalazioni effettuate dall'utente, dal server couchdb. 
  * Poi li inserisce nella listView */
 app.getDataFromServer = function(){
-	georep.db.setDBName(app.dbName);
+	georep.db.setDBName(georep.db.name);
 	georep.db.getUserDocs(georep.user._id, function(err, data){
 		if (err != undefined){
 			alert("Impossibile caricare i dati dal server");
@@ -283,7 +285,7 @@ app.coordsToAddress = function (lat, lng, callback){
 }
 /* carica la segnalazione completa */
 app.loadRepo = function(e){
-     georep.db.setDBName(app.dbName);
+     georep.db.setDBName(georep.db.name);
      georep.db.getDoc(app.query.docId, true, function(err, data){
     	 if (err != undefined){
     		 alert(err);
@@ -558,4 +560,4 @@ app.onDeviceReady = function() {
 };
 
 //-------------------- per la simulazione nel browser --------------------------	
-window.device = {uuid: "betta"};
+window.device = {uuid: "mibe"};
