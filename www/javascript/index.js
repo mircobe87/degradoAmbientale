@@ -561,3 +561,4 @@ app.onDeviceReady = function() {
 
 //-------------------- per la simulazione nel browser --------------------------	
 window.device = {uuid: "mibe"};
+
