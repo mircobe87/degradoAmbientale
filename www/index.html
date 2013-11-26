@@ -88,12 +88,14 @@
         <div data-role="view" data-title="Degrado Ambientale" id="new-view" data-layout="default">
 		    <ul data-role="listview" data-style="inset">
 				<li><label for="titoloToRepo">Titolo: <input type="text" id="titoloToRepo"/></label></li>
-				<li><label for="descrizioneToRepo">Descrizione: <input type="text" id="descrizioneToRepo"/></label></li>			
+				<li><label for="descrizioneToRepo">Descrizione: <input type="text" id="descrizioneToRepo"/></label></li>
+				<li><label>Foto:<img id="imgToRepo" alt="fotosegnalazione" src="img/placeholder.png" style="width:  100%; border: 0px;"></label></li>
 			</ul>
-			<img id="imgToRepo" alt="fotosegnalazione" style="width:  96%; margin-left: 2%; marign-right: 2%">
-			<a data-role="button" data-icon="camera" style="margin-left: 1em; margin-right: 0.5em;" data-click="app.getPhoto">Scatta Foto</a>
-			<a data-role="button" data-icon="action" style="margin-left: 1em; margin-right: 0.5em;">Invia Segnalazione</a>
 			
+			<div style="text-align: center;">
+				<a data-role="button" data-icon="camera" style="margin-left: 1em; margin-right: 0.5em;" data-click="app.getPhoto">Scatta Foto</a>
+				<a data-role="button" data-icon="action" style="margin-left: 1em; margin-right: 0.5em;">Invia Segnalazione</a>
+			</div>	
         </div>
         <!-- View User -->
         <div data-role="view" data-title="Degrado Ambientale" id="user-view" data-use-native-scrolling="true" class="newformstyle" data-show="app.showOptionView" data-init="app.initOptionView">
