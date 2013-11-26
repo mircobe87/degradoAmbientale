@@ -303,6 +303,46 @@ app.loadRepo = function(e){
      });
 };
 
+/*-------------------------Sezione vista segnalazione ------------------------*/
+var segnalazione = {
+	titolo: "",
+	descrizione: "",
+	imgbase64: "",
+	lat: 0,
+	lon: 0
+};
+/** 
+ * avvia l'app fotocamera per scattare la foto da segnalare, se non ci sono errori, l'anteprima della foto viene 
+ * mostrata nella pagina di segnalazione.
+ */ 
+
+app.getPhoto = function(){
+	var cameraOptions = {
+		  /*quality : 75,*/
+		  destinationType : Camera.DestinationType.DATA_URL, // con DATA_URL viene restituita la stringa in base64
+		  sourceType : Camera.PictureSourceType.CAMERA,
+		  /*allowEdit : true,*/
+		  encodingType: Camera.EncodingType.JPEG,
+		  targetWidth: 100,
+		  targetHeight: 100,
+		  /*popoverOptions: CameraPopoverOptions,*/
+		  saveToPhotoAlbum: true 
+		
+	};
+	navigator.camera.getPicture(
+			/* funzione chiamata quando lo scatto della foto ha avuto successo */
+			function(imageData){
+				alert(imageData);
+				/*segnalazione.imgbase64 = imageData;*/
+				/*$("#imgToRepo").attr("src", "data:image/jpeg;base64," + imageData);*/
+			}, 
+			/* funzione chiamata quando lo scatto della foto NON ha avuto successo */
+			function(message){
+				alert(message);
+			}, cameraOptions);
+};
+	
+
 // ------------------ sezione AVVIO & OPZIONI ----------------------------------
 
 /**
@@ -324,16 +364,16 @@ app.FAKE_NICK = '-:RkFLRV9OSUNL:-';
 app.configServer = function(){
 	//console.log(window.device);
 	georep.user.set({
-       	name: device.uuid,
-       	password: device.uuid,
+       	name: "nome",
+       	password: "password",
        	nick: localStorage.userNick,
        	mail: localStorage.userMail
     });
-	georep.db.setAdmin('mircobe87', 'COU0x7bemirco13');
+	georep.db.setAdmin('pratesim', 'cou111Viola<3');
 	georep.db.setDBName('testdb');
 	georep.db.setURLServer({
 		proto: 'http://',
-		host: '192.168.0.2',
+		host: '192.168.0.111',
 		port: 5984
 	});
 };
