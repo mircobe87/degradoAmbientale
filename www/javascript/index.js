@@ -318,23 +318,19 @@ var segnalazione = {
 
 app.getPhoto = function(){
 	var cameraOptions = {
-		  /*quality : 75,*/
 		  destinationType : Camera.DestinationType.DATA_URL, // con DATA_URL viene restituita la stringa in base64
 		  sourceType : Camera.PictureSourceType.CAMERA,
-		  /*allowEdit : true,*/
-		  encodingType: Camera.EncodingType.JPEG,
-		  targetWidth: 100,
+		  encodingType: Camera.EncodingType.JPEG
+		  /*targetWidth: 100,
 		  targetHeight: 100,
-		  /*popoverOptions: CameraPopoverOptions,*/
-		  saveToPhotoAlbum: true 
-		
+		  saveToPhotoAlbum: false*/		
 	};
 	navigator.camera.getPicture(
 			/* funzione chiamata quando lo scatto della foto ha avuto successo */
 			function(imageData){
-				alert(imageData);
-				/*segnalazione.imgbase64 = imageData;*/
-				/*$("#imgToRepo").attr("src", "data:image/jpeg;base64," + imageData);*/
+				//console.log("Foto scattata");
+				segnalazione.imgbase64 = imageData;
+				$("#imgToRepo").attr("src", "data:image/jpeg;base64," + imageData);
 			}, 
 			/* funzione chiamata quando lo scatto della foto NON ha avuto successo */
 			function(message){

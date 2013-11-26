@@ -14,6 +14,7 @@
     <feature name="http://api.phonegap.com/1.0/device" />
     <feature name="http://api.phonegap.com/1.0/geolocation"/>
     <feature name="http://api.phonegap.com/1.0/camera" />
+	<feature name="http://api.phonegap.com/1.0/file"/>
     <!--
     <preference name="permissions" value="none" />
     -->
