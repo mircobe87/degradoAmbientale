@@ -41,6 +41,7 @@
 		
 		<script type="text/javascript" src="/javascript/georep.js"></script>
 		<link href="css/kendo.android.edit.css" rel="stylesheet" />
+		<link href="css/kendo.icons.css" rel="stylesheet" />
 
 <!-- The following style is used to disable the scroller and set the correct height for the map element -->
         <style>
@@ -59,12 +60,12 @@
 <!-- START APP ---------------------------------------------------------------->
 
 		 <!-- Drawer -->
-		<div data-role="drawer" id="drawer">
+		<div data-role="drawer" data-swipe-to-open="false" id="drawer">
 			<ul data-role="listview" data-type="group">
 				<li>Men&ugrave
 					<ul>
 						<li data-icon="globe"><a href="#map-view" data-transition="none">Mappa</a></li>
-						<li data-icon="organize"><a href="#list-view" data-transition="none">Segnalazioni</a></li>
+						<li data-icon="list-icon"><a href="#list-view" data-transition="none">Segnalazioni</a></li>
 						<li data-icon="compose"><a href="#new-view" data-transition="none">Segnala</a></li>
 					</ul>
 				</li>
@@ -151,7 +152,7 @@
         <div data-role="layout" data-id="default">
                 <div data-role="header">
                         <div data-role="navbar">
-                                <a data-role="button" data-rel="drawer" href="#drawer" data-icon="more" data-align="left"></a>
+                                <a data-role="button" data-rel="drawer" href="#drawer" data-icon="drawer-icon" data-align="left"></a>
                                 <span data-role="view-title"></span>
                         </div>
                 </div>

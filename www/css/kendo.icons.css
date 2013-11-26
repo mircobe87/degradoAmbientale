@@ -1,0 +1,8 @@
+.km-drawer-icon:after,
+.km-drawer-icon:before {
+	content: "\e077";
+}
+.km-list-icon:after,
+.km-list-icon:before {
+	content: "\e078";
+}
