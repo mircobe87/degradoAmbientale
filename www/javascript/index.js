@@ -304,10 +304,17 @@ app.loadRepo = function(e){
 };
 
 /*-------------------------Sezione vista segnalazione ------------------------*/
-var segnalazione = {
-	titolo: undefined,
-	descrizione: undefined,
-	imgbase64: undefined,
+app.segnalazione = {
+	title: "",
+	msg: "",
+	img: {
+		content_type: "",
+		data: ""
+	},
+	loc: {
+		latitude: "",
+		longitude: ""
+	}
 };
 /** 
  * avvia l'app fotocamera per scattare la foto da segnalare, se non ci sono errori, l'anteprima della foto viene 
@@ -327,7 +334,8 @@ app.getPhoto = function(){
 			/* funzione chiamata quando lo scatto della foto ha avuto successo */
 			function(imageData){
 				//console.log("Foto scattata");
-				segnalazione.imgbase64 = imageData;
+				app.segnalazione.img.data = imageData;
+				app.segnalazione.img.content_type = 'image/jpeg';
 				$("#imgToRepo").attr("src", "data:image/jpeg;base64," + imageData);
 			}, 
 			/* funzione chiamata quando lo scatto della foto NON ha avuto successo */
@@ -338,38 +346,30 @@ app.getPhoto = function(){
 
 /** invia al server la segnalazione */
 app.sendRepo = function (){
-	segnalazione.titolo = $("#titoloToRepo").val();
-	segnalazione.descrizione = $("#descrizioneToRepo").val();
+	app.segnalazione.title = $("#titoloToRepo").val();
+	app.segnalazione.msg = $("#descrizioneToRepo").val();
 	/*console.log(segnalazione.titolo);
 	console.log(segnalazione.descrizione);*/
-	if (segnalazione.titolo == "" || segnalazione.descrizione == "" || !segnalazione.imgbase64){
+	if (!app.segnalazione.title || !app.segnalazione.msg || !app.segnalazione.img.data){
 		alert("Completare tutti i campi prima di inviare la segnalazione!");
 	}
 	else{
-		var doc = {
-			title: segnalazione.title,
-			msg: segnalazione.descrizione,
-			img: {
-				content_type: "image/jpeg",
-				data: segnalazione.imgbase64
-			},
-			loc: undefined
-		};
 		/* accede al gps per ottenere la posizione */
 		navigator.geolocation.getCurrentPosition(
 				/* funzione chiamata in caso di successo */
 				function (position){
-					doc.loc.latitude = position.coords.latitude;
-					doc.loc.longitude = position.coords.latitude;
+					app.segnalazione.loc.latitude = position.coords.latitude;
+					app.segnalazione.loc.longitude = position.coords.longitude;
 					/* invio della segnalazione al server */
-					georep.db.postDoc(doc, function(err, data){
-						if (!data){
-							console.log(err);
-							alert("Invio segnalazione fallito!...Prova di nuovo");
-						}
-						else{
+					console.log(app.segnalazione);
+					georep.db.postDoc(app.segnalazione, function(err, data){
+						if(!err){
 							console.log(data);
 							alert("Segnalazione effettuata!");
+							app.clearRepo();
+						}else{
+							console.log(err);
+							alert("Invio segnalazione fallito!...Prova di nuovo");
 						}
 					});
 				},
@@ -381,6 +381,20 @@ app.sendRepo = function (){
 
 	}
 };
+
+app.clearRepo = function(){
+	console.log("clearRepo()");
+	app.segnalazione.title = "";
+	app.segnalazione.msg = "";
+	app.segnalazione.img.content_type = "";
+	app.segnalazione.img.data = "";
+	app.segnalazione.loc.latitude = "";
+	app.segnalazione.loc.longitude = "";
+
+	$("#titoloToRepo")[0].value = '';
+	$("#descrizioneToRepo")[0].value = '';
+	$('#imgToRepo')[0].src = 'img/placeholder.png';
+},
 	
 
 // ------------------ sezione AVVIO & OPZIONI ----------------------------------
@@ -404,18 +418,18 @@ app.FAKE_NICK = '-:RkFLRV9OSUNL:-';
 app.configServer = function(){
 	//console.log(window.device);
 	georep.user.set({
-       	name: "nome",
-       	password: "password",
-		/*name: device.uuid,
-       	password: device.uuid,*/
+ /*    	name: "nome",
+       	password: "password",*/
+		name: device.uuid,
+       	password: device.uuid,
        	nick: localStorage.userNick,
        	mail: localStorage.userMail
     });
-	georep.db.setAdmin('pratesim', 'cou111Viola<3');
+	georep.db.setAdmin('mircobe87', 'COU0x7bemirco13');
 	georep.db.setDBName('testdb');
 	georep.db.setURLServer({
 		proto: 'http://',
-		host: '192.168.0.111',
+		host: '192.168.0.2',
 		port: 5984
 	});
 };
@@ -642,4 +656,4 @@ app.onDeviceReady = function() {
 };
 
 //-------------------- per la simulazione nel browser --------------------------	
-window.device = {uuid: "mibe"};
+//window.device = {uuid: "mibe"};
