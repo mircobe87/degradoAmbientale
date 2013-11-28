@@ -285,7 +285,11 @@ app.coordsToAddress = function (lat, lng, callback){
 /* carica la segnalazione completa */
 app.loadRepo = function(e){
      georep.db.setDBName(georep.db.name);
+     /** avvio l'animazione di caricamento */
+     app.startWaiting("Recupero Dettagli ...");
      georep.db.getDoc(app.query.docId, true, function(err, data){
+     	/** appena la chiamata ritorna termino l'animazione */
+     	app.stopWaiting();
     	 if (err != undefined){
     		 alert(err);
     	 }
@@ -361,7 +365,11 @@ app.sendRepo = function (){
 					app.segnalazione.loc.longitude = position.coords.longitude;
 					/* invio della segnalazione al server */
 					console.log(app.segnalazione);
+					/** avvio l'animazione di caricamento */
+					app.startWaiting("Invio Segnalazione ...");
 					georep.db.postDoc(app.segnalazione, function(err, data){
+						/** appena la chiamata ritorna termino l'animazione */
+						app.stopWaiting();
 						if(!err){
 							console.log(data);
 							alert("Segnalazione effettuata!");
@@ -655,5 +663,27 @@ app.onDeviceReady = function() {
     app.loader();
 };
 
+//----------------------- Animazione di Caricamento ----------------------------
+
+/**
+ * Avvia l'animazione di caricamento con un messaggio personalizzato
+ *
+ * msg (string): messaggio mostrato con l'animazione. Se omesso viene mostrato
+ *               il messaggio di default di kendo ui.
+ */
+app.startWaiting = function(msg) {
+	if(msg) app.changeLoadingMessage(msg);
+	app.showLoading();
+};
+
+/**
+ * Elimina l'animazione di caricamento
+ */
+app.stopWaiting = function(){
+	app.hideLoading();
+};
+
 //-------------------- per la simulazione nel browser --------------------------	
-//window.device = {uuid: "mibe"};
+
+//window.device = {uuid: "2241a1dc464fa6ab"};
+
