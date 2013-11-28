@@ -18,6 +18,9 @@
     <!--
     <preference name="permissions" value="none" />
     -->
+    
+    <preference name="android-windowSoftInputMode" value="adjustPan" />
+    
     <preference name="orientation" value="portrait" />
     <preference name="target-device" value="universal" />
     <preference name="fullscreen" value="false" />

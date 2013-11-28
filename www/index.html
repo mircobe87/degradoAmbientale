@@ -86,7 +86,7 @@
 		    <ul data-role="listView" id="listViewContent" data-style="inset"></ul>
         </div>
         <!-- View New -->
-        <div data-role="view" data-title="Degrado Ambientale" id="new-view" data-layout="default" data-show="app.clearRepo">
+        <div data-role="view" data-title="Degrado Ambientale" id="new-view" data-use-native-scrolling="true" data-layout="default" data-show="app.clearRepo">
 		    <ul data-role="listview" data-style="inset">
 				<li><label for="titoloToRepo">Titolo: <input type="text" id="titoloToRepo"/></label></li>
 				<li><label for="descrizioneToRepo">Descrizione: <input type="text" id="descrizioneToRepo"/></label></li>
@@ -103,28 +103,39 @@
         	<form>
         		<ul data-role="listview" data-style="inset">
         			<li>
-						<p>
-							Un <b>nickname</b> serve per differenziarsi dagli altri utenti e comparir&agrave come
-							nome dell'autore di tutte le tue segnalazioni. Puoi cambiarlo in qualsiasi momento.
-						</p>
         				<label>
         					Nick Name:
-        					<input id="input-nick" type="search" placeholder="nickname" value="" />
+        					<input id="input-nick" type="text" placeholder="nickname" value="" />
         				</label>
         			</li>
         			<li>
-						<p>
-							Un indirizzo <b>e-mail</b> &egrave utile per ricevere segnalazioni e informazioni sia
-							dall'amministratore che dagli altri utenti. L'indirizzo di posta elettronica &egrave
-							visibile nei dettagli di una segnalazione. Poi combiarlo in qualsiasi momento.
-						</p>
+
         				<label>
         					E-Mail:
-        					<input id="input-mail" type="search" placeholder="inidirizzo@email.com" value="" />
+        					<input id="input-mail" type="text" placeholder="inidirizzo@email.com" value="" />
         				</label>
         			</li>
         		</ul>
         	</form>
+        	<ul data-role="listview" data-style="inset" data-type="group">
+				<li>Nick Name
+					<ul>
+						<li>
+							Un <b>nickname</b> serve per differenziarsi dagli altri utenti e comparir&agrave come
+							nome dell'autore di tutte le tue segnalazioni. Puoi cambiarlo in qualsiasi momento.
+						</li>
+					</ul>
+				</li>
+				<li>E-Mail
+					<ul>
+						<li>
+							Un indirizzo <b>e-mail</b> &egrave utile per ricevere segnalazioni e informazioni sia
+							dall'amministratore che dagli altri utenti. L'indirizzo di posta elettronica &egrave
+							visibile nei dettagli di una segnalazione. Poi combiarlo in qualsiasi momento.
+						</li>
+					</ul>
+				</li>
+        	</ul>
         	<p style="text-align: center;">
 	        	<a data-role="button" id="input-ok">Fatto</a>
         	</p>

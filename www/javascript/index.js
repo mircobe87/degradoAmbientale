@@ -144,7 +144,6 @@ app.clearMap = function(){
 app.setUpMarkerClick = function(marker){
 	/** handler dell'evento */
 	var onClickHandler = function(){
-		alert('hai cliccato sul marker con ID: ' + marker.docId);
 		app.query.docId = marker.docId;
 		app.navigate('#view-repoDetail');
 	}
@@ -367,6 +366,7 @@ app.sendRepo = function (){
 							console.log(data);
 							alert("Segnalazione effettuata!");
 							app.clearRepo();
+							app.navigate("#map-view");
 						}else{
 							console.log(err);
 							alert("Invio segnalazione fallito!...Prova di nuovo");
@@ -425,11 +425,11 @@ app.configServer = function(){
        	nick: localStorage.userNick,
        	mail: localStorage.userMail
     });
-	georep.db.setAdmin('mircobe87', 'COU0x7bemirco13');
+	georep.db.setAdmin('pratesim', 'cou111Viola<3');
 	georep.db.setDBName('testdb');
 	georep.db.setURLServer({
 		proto: 'http://',
-		host: '192.168.0.2',
+		host: 'pram.homepc.it',
 		port: 5984
 	});
 };
