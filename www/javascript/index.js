@@ -294,14 +294,14 @@ app.loadRepo = function(e){
     		 alert(err);
     	 }
     	 else {
-    		 $("#descrizione").attr("value", data.msg);
+    		 $("#descrizione").text(data.msg);
     		 $("#repoDetail-title").text(data.title);
     		 $("#repoImg").attr("src", "data:"+data._attachments.img.content_type+";base64,"+data._attachments.img.data);
     		 app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
-    			 $("#indirizzo").attr("value", indirizzo);
+    			 $("#indirizzo").text(indirizzo);
     		 });
-    		 $("#nickName").attr("value", data.userNick);
-    		 $("#mail").attr("value", data.userMail);
+    		 $("#nickName").text(data.userNick);
+    		 $("#mail").text(data.userMail);
     	 }
      });
 };

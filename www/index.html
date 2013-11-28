@@ -146,15 +146,41 @@
 		    <div data-role="header">
 		        <div data-role="navbar">
 		            <span id="repoDetail-title">Titolo</span>
+		            <a id="back-button" data-align="left" href="#:back" data-role="backbutton">Back</a>
 		        </div>
-		    </div>	
-			<ul data-role="listview" data-style="inset">
-				<li><label for="nickName">NickName: <input type="text" id="nickName" readonly="true"/></label></li>
-				<li><label for="mail">Mail: <input type="text" id="mail" readonly="true" value="mail"/></label>
-				<li><label for="descrizione">Descrizione: <input type="text" id="descrizione" readonly="true"/></label></li>
-				<li><label for="indirizzo">Nei pressi di: <input type="text" id="indirizzo" readonly="true"/></label></li>
-				<li><img id="repoImg" alt="Qui ci finirà la foto della segnalazione" style="width:  100%; border: 0px;"/></li>				
-			</ul>
+		    </div>
+		    <ul data-role="listview" data-style="inset" data-type="group">
+		    	<li>
+		    		NickName
+		    		<ul>
+		    			<li><span id="nickName"></span></li>
+		    		</ul>
+		    	</li>
+		    	<li>
+		    		E-Mail
+		    		<ul>
+		    			<li><span id="mail"></span></li>
+		    		</ul>
+		    	</li>
+		    	<li>
+		    		Descrizione
+		    		<ul>
+		    			<li><span id="descrizione"></span></li>
+		    		</ul>
+		    	</li>
+		    	<li>
+		    		Nei pressi di
+		    		<ul>
+		    			<li><span id="indirizzo"></span></li>
+		    		</ul>
+		    	</li>
+		    	<li>
+		    		Foto
+		    		<ul>
+		    			<li><img id="repoImg" src="img/placeholder.png" style="width:  100%; border: 0px;"/></li>
+		    		</ul>
+		    	</li>
+		    </ul>
 		</div>
 
 		
