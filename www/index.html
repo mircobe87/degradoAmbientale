@@ -60,7 +60,11 @@
 <!-- START APP ---------------------------------------------------------------->
 
 		 <!-- Drawer -->
+<<<<<<< HEAD
 		<div data-role="drawer" id="drawer" data-swipe-to-open="false">
+=======
+		<div data-role="drawer" data-swipe-to-open="false" id="drawer">
+>>>>>>> reportingView
 			<ul data-role="listview" data-type="group">
 				<li>Men&ugrave
 					<ul>
@@ -86,37 +90,56 @@
 		    <ul data-role="listView" id="listViewContent" data-style="inset"></ul>
         </div>
         <!-- View New -->
-        <div data-role="view" data-title="Degrado Ambientale" id="new-view" data-layout="default">
-		    <h2>View Nuova Segnalazione</h2>
-		    <p>le API Cordova <b><span id="cordova">non</span></b> sono pronte</p>
+        <div data-role="view" data-title="Degrado Ambientale" id="new-view" data-use-native-scrolling="true" data-layout="default" data-show="app.clearRepo">
+		    <ul data-role="listview" data-style="inset">
+				<li><label for="titoloToRepo">Titolo: <input type="text" id="titoloToRepo"/></label></li>
+				<li><label for="descrizioneToRepo">Descrizione: <input type="text" id="descrizioneToRepo"/></label></li>
+				<li><label>Foto:<img id="imgToRepo" alt="fotosegnalazione" src="img/placeholder.png" style="width:  100%; border: 0px;"></label></li>
+			</ul>
+			
+			<div style="text-align: center;">
+				<a data-role="button" data-icon="camera" style="margin-left: 1em; margin-right: 0.5em;" data-click="app.getPhoto">Scatta Foto</a>
+				<a data-role="button" data-icon="action" style="margin-left: 1em; margin-right: 0.5em;" data-click="app.sendRepo">Invia Segnalazione</a>
+			</div>	
         </div>
         <!-- View User -->
         <div data-role="view" data-title="Degrado Ambientale" id="user-view" data-use-native-scrolling="true" class="newformstyle" data-show="app.showOptionView" data-init="app.initOptionView">
         	<form>
         		<ul data-role="listview" data-style="inset">
         			<li>
-						<p>
-							Un <b>nickname</b> serve per differenziarsi dagli altri utenti e comparir&agrave come
-							nome dell'autore di tutte le tue segnalazioni. Puoi cambiarlo in qualsiasi momento.
-						</p>
         				<label>
         					Nick Name:
-        					<input id="input-nick" type="search" placeholder="nickname" value="" />
+        					<input id="input-nick" type="text" placeholder="nickname" value="" />
         				</label>
         			</li>
         			<li>
-						<p>
-							Un indirizzo <b>e-mail</b> &egrave utile per ricevere segnalazioni e informazioni sia
-							dall'amministratore che dagli altri utenti. L'indirizzo di posta elettronica &egrave
-							visibile nei dettagli di una segnalazione. Poi combiarlo in qualsiasi momento.
-						</p>
+
         				<label>
         					E-Mail:
-        					<input id="input-mail" type="search" placeholder="inidirizzo@email.com" value="" />
+        					<input id="input-mail" type="text" placeholder="inidirizzo@email.com" value="" />
         				</label>
         			</li>
         		</ul>
         	</form>
+        	<ul data-role="listview" data-style="inset" data-type="group">
+				<li>Nick Name
+					<ul>
+						<li>
+							Un <b>nickname</b> serve per differenziarsi dagli altri utenti e comparir&agrave come
+							nome dell'autore di tutte le tue segnalazioni. Puoi cambiarlo in qualsiasi momento.
+						</li>
+					</ul>
+				</li>
+				<li>E-Mail
+					<ul>
+						<li>
+							Un indirizzo <b>e-mail</b> &egrave utile per ricevere segnalazioni e informazioni sia
+							dall'amministratore che dagli altri utenti. L'indirizzo di posta elettronica &egrave
+							visibile nei dettagli di una segnalazione. Poi combiarlo in qualsiasi momento.
+						</li>
+					</ul>
+				</li>
+        	</ul>
         	<p style="text-align: center;">
 	        	<a data-role="button" id="input-ok">Fatto</a>
         	</p>
@@ -127,15 +150,41 @@
 		    <div data-role="header">
 		        <div data-role="navbar">
 		            <span id="repoDetail-title">Titolo</span>
+		            <a id="back-button" data-align="left" href="#:back" data-role="backbutton">Back</a>
 		        </div>
-		    </div>	
-			<ul data-role="listview" data-style="inset">
-				<li><label for="nickName">NickName: <input type="text" id="nickName" readonly="true"/></label></li>
-				<li><label for="mail">Mail: <input type="text" id="mail" readonly="true" value="mail"/></label>
-				<li><label for="descrizione">Descrizione: <input type="text" id="descrizione" readonly="true"/></label></li>
-				<li><label for="indirizzo">Nei pressi di: <input type="text" id="indirizzo" readonly="true"/></label></li>
-				<li><img id="repoImg" alt="Qui ci finirà la foto della segnalazione"/></li>				
-			</ul>
+		    </div>
+		    <ul data-role="listview" data-style="inset" data-type="group">
+		    	<li>
+		    		NickName
+		    		<ul>
+		    			<li><span id="nickName"></span></li>
+		    		</ul>
+		    	</li>
+		    	<li>
+		    		E-Mail
+		    		<ul>
+		    			<li><span id="mail"></span></li>
+		    		</ul>
+		    	</li>
+		    	<li>
+		    		Descrizione
+		    		<ul>
+		    			<li><span id="descrizione"></span></li>
+		    		</ul>
+		    	</li>
+		    	<li>
+		    		Nei pressi di
+		    		<ul>
+		    			<li><span id="indirizzo"></span></li>
+		    		</ul>
+		    	</li>
+		    	<li>
+		    		Foto
+		    		<ul>
+		    			<li><img id="repoImg" src="img/placeholder.png" style="width:  100%; border: 0px;"/></li>
+		    		</ul>
+		    	</li>
+		    </ul>
 		</div>
 
 		

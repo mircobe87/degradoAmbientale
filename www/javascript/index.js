@@ -144,8 +144,10 @@ app.clearMap = function(){
 app.setUpMarkerClick = function(marker){
 	/** handler dell'evento */
 	var onClickHandler = function(){
-		alert('hai cliccato sul marker con ID: ' + marker.docId);
 		app.query.docId = marker.docId;
+		app.query.userId = marker.userId;
+		//console.log("docId: " + marker.docId);
+		//console.log("userId: " + marker.userId);
 		app.navigate('#view-repoDetail');
 	}
 	/** setta lo handler per l'evento */
@@ -185,7 +187,7 @@ app.updateMap = function(){
 			
 			/** setta l'handler dell'evento click per un marker */
 			
-			
+			//console.log(data);
 			/**
 			 * per ogni documento che il server mi ha inviato io creo un
 			 * marker, lo metto nel vettore e gli configuro un handler per
@@ -201,6 +203,12 @@ app.updateMap = function(){
 					 * server il Doc tramite il suo ID
 					 */
 					docId: data.rows[i].id,
+					/**
+					 * docId: property ausiliaria utile per quando si clicchera'
+					 * sul marker: in questo modo possiamo chiedere al
+					 * server nick e mail dell'utente tramite userId
+					 */
+					userId: data.rows[i].value,
 					position: new google.maps.LatLng(
 						/** latitudine  (asse y) */
 						data.rows[i].geometry.coordinates[1],
@@ -209,7 +217,8 @@ app.updateMap = function(){
 					),
 					icon: (data.rows[i].value == georep.user._id) ? app.MYDOCS_MARKER : app.OTHERDOCS_MARKER 
 				}
-				
+				//console.log("marker[" + i + "]: ");
+				//console.log(markerOpt);
 				/** metto il nuovo marker nel vettore */
 				app.markers[i] = new google.maps.Marker(markerOpt);
 				//console.log("marker "+i+" fatto");
@@ -285,23 +294,141 @@ app.coordsToAddress = function (lat, lng, callback){
 }
 /* carica la segnalazione completa */
 app.loadRepo = function(e){
-     georep.db.setDBName(georep.db.name);
+     georep.db.setDBName('testdb');
+     /** avvio l'animazione di caricamento */
+     app.startWaiting("Recupero Dettagli ...");
+     /** ottengo i dati della segnalazione **/
      georep.db.getDoc(app.query.docId, true, function(err, data){
     	 if (err != undefined){
-    		 alert(err);
+    	     /** appena la chiamata ritorna termino l'animazione */
+    	     app.stopWaiting();
+    		 alert("Impossibile caricare la segnalazione: " + err);
     	 }
     	 else {
-    		 $("#descrizione").attr("value", data.msg);
+    		 $("#descrizione").text(data.msg);
     		 $("#repoDetail-title").text(data.title);
     		 $("#repoImg").attr("src", "data:"+data._attachments.img.content_type+";base64,"+data._attachments.img.data);
     		 app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
-    			 $("#indirizzo").attr("value", indirizzo);
+    			 $("#indirizzo").text(indirizzo);
     		 });
-    		 $("#nickName").attr("value", data.userNick);
-    		 $("#mail").attr("value", data.userMail);
+    	     /** appena la chiamata ritorna termino l'animazione */
+    	     app.stopWaiting();
     	 }
      });
+     /** ottengo nick e mail di chi ha effettuato la segnalazione **/
+     georep.db.setDBName('_users');
+     //console.log("userId: " + app.query.userId);
+     georep.db.getDoc(app.query.userId, false, function(err, data){
+     	 if (err != undefined){
+     		 alert(err);
+     	 }
+     	 else {
+     		 console.log(data);
+     		 $("#nickName").text(data.nick);
+     		 $("#mail").text(data.mail);
+     	 }
+      });
+     georep.db.setDBName('testdb');
 };
+
+/*-------------------------Sezione vista segnalazione ------------------------*/
+app.segnalazione = {
+	title: "",
+	msg: "",
+	img: {
+		content_type: "",
+		data: ""
+	},
+	loc: {
+		latitude: "",
+		longitude: ""
+	}
+};
+/** 
+ * avvia l'app fotocamera per scattare la foto da segnalare, se non ci sono errori, l'anteprima della foto viene 
+ * mostrata nella pagina di segnalazione.
+ */ 
+
+app.getPhoto = function(){
+	var cameraOptions = {
+		  destinationType : Camera.DestinationType.DATA_URL, // con DATA_URL viene restituita la stringa in base64
+		  sourceType : Camera.PictureSourceType.CAMERA,
+		  encodingType: Camera.EncodingType.JPEG
+		  /*targetWidth: 100,
+		  targetHeight: 100,
+		  saveToPhotoAlbum: true*/		
+	};
+	navigator.camera.getPicture(
+			/* funzione chiamata quando lo scatto della foto ha avuto successo */
+			function(imageData){
+				//console.log("Foto scattata");
+				app.segnalazione.img.data = imageData;
+				app.segnalazione.img.content_type = 'image/jpeg';
+				$("#imgToRepo").attr("src", "data:image/jpeg;base64," + imageData);
+			}, 
+			/* funzione chiamata quando lo scatto della foto NON ha avuto successo */
+			function(message){
+				console.log(message);
+			}, cameraOptions);
+};
+
+/** invia al server la segnalazione */
+app.sendRepo = function (){
+	app.segnalazione.title = $("#titoloToRepo").val();
+	app.segnalazione.msg = $("#descrizioneToRepo").val();
+	/*console.log(segnalazione.titolo);
+	console.log(segnalazione.descrizione);*/
+	if (!app.segnalazione.title || !app.segnalazione.msg || !app.segnalazione.img.data){
+		alert("Completare tutti i campi prima di inviare la segnalazione!");
+	}
+	else{
+		/* accede al gps per ottenere la posizione */
+		navigator.geolocation.getCurrentPosition(
+				/* funzione chiamata in caso di successo */
+				function (position){
+					app.segnalazione.loc.latitude = position.coords.latitude;
+					app.segnalazione.loc.longitude = position.coords.longitude;
+					/* invio della segnalazione al server */
+					console.log(app.segnalazione);
+					/** avvio l'animazione di caricamento */
+					app.startWaiting("Invio Segnalazione ...");
+					georep.db.postDoc(app.segnalazione, function(err, data){
+						/** appena la chiamata ritorna termino l'animazione */
+						app.stopWaiting();
+						if(!err){
+							console.log(data);
+							alert("Segnalazione effettuata!");
+							app.clearRepo();
+							app.navigate("#map-view");
+						}else{
+							console.log(err);
+							alert("Invio segnalazione fallito!...Prova di nuovo");
+						}
+					});
+				},
+				/* funzione chiamata in caso di errore */
+                function (error){
+					console.log(error);
+					alert("Impossibile ottenere la posizione. Controllare le impostazioni per il gps");
+				}, {enableHighAccuracy: true}); //opzione che permette di ottenere la posizione sfruttando il gps del dispositivo
+
+	}
+};
+
+app.clearRepo = function(){
+	console.log("clearRepo()");
+	app.segnalazione.title = "";
+	app.segnalazione.msg = "";
+	app.segnalazione.img.content_type = "";
+	app.segnalazione.img.data = "";
+	app.segnalazione.loc.latitude = "";
+	app.segnalazione.loc.longitude = "";
+
+	$("#titoloToRepo")[0].value = '';
+	$("#descrizioneToRepo")[0].value = '';
+	$('#imgToRepo')[0].src = 'img/placeholder.png';
+},
+	
 
 // ------------------ sezione AVVIO & OPZIONI ----------------------------------
 
@@ -324,16 +451,16 @@ app.FAKE_NICK = '-:RkFLRV9OSUNL:-';
 app.configServer = function(){
 	//console.log(window.device);
 	georep.user.set({
-       	name: device.uuid,
+		name: device.uuid,
        	password: device.uuid,
        	nick: localStorage.userNick,
        	mail: localStorage.userMail
     });
-	georep.db.setAdmin('mircobe87', 'COU0x7bemirco13');
+	georep.db.setAdmin('pratesim', 'cou111Viola<3');
 	georep.db.setDBName('testdb');
 	georep.db.setURLServer({
 		proto: 'http://',
-		host: '192.168.0.2',
+		host: 'pram.homepc.it',
 		port: 5984
 	});
 };
@@ -559,6 +686,27 @@ app.onDeviceReady = function() {
     app.loader();
 };
 
+//----------------------- Animazione di Caricamento ----------------------------
+
+/**
+ * Avvia l'animazione di caricamento con un messaggio personalizzato
+ *
+ * msg (string): messaggio mostrato con l'animazione. Se omesso viene mostrato
+ *               il messaggio di default di kendo ui.
+ */
+app.startWaiting = function(msg) {
+	if(msg) app.changeLoadingMessage(msg);
+	app.showLoading();
+};
+
+/**
+ * Elimina l'animazione di caricamento
+ */
+app.stopWaiting = function(){
+	app.hideLoading();
+};
+
 //-------------------- per la simulazione nel browser --------------------------	
-window.device = {uuid: "mibe"};
+//window.device = {uuid: "mau"};
+
 
