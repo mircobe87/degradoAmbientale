@@ -145,6 +145,9 @@ app.setUpMarkerClick = function(marker){
 	/** handler dell'evento */
 	var onClickHandler = function(){
 		app.query.docId = marker.docId;
+		app.query.userId = marker.userId;
+		//console.log("docId: " + marker.docId);
+		//console.log("userId: " + marker.userId);
 		app.navigate('#view-repoDetail');
 	}
 	/** setta lo handler per l'evento */
@@ -184,7 +187,7 @@ app.updateMap = function(){
 			
 			/** setta l'handler dell'evento click per un marker */
 			
-			
+			//console.log(data);
 			/**
 			 * per ogni documento che il server mi ha inviato io creo un
 			 * marker, lo metto nel vettore e gli configuro un handler per
@@ -200,6 +203,12 @@ app.updateMap = function(){
 					 * server il Doc tramite il suo ID
 					 */
 					docId: data.rows[i].id,
+					/**
+					 * docId: property ausiliaria utile per quando si clicchera'
+					 * sul marker: in questo modo possiamo chiedere al
+					 * server nick e mail dell'utente tramite userId
+					 */
+					userId: data.rows[i].value,
 					position: new google.maps.LatLng(
 						/** latitudine  (asse y) */
 						data.rows[i].geometry.coordinates[1],
@@ -208,7 +217,8 @@ app.updateMap = function(){
 					),
 					icon: (data.rows[i].value == georep.user._id) ? app.MYDOCS_MARKER : app.OTHERDOCS_MARKER 
 				}
-				
+				//console.log("marker[" + i + "]: ");
+				//console.log(markerOpt);
 				/** metto il nuovo marker nel vettore */
 				app.markers[i] = new google.maps.Marker(markerOpt);
 				//console.log("marker "+i+" fatto");
@@ -284,14 +294,15 @@ app.coordsToAddress = function (lat, lng, callback){
 }
 /* carica la segnalazione completa */
 app.loadRepo = function(e){
-     georep.db.setDBName(georep.db.name);
+     georep.db.setDBName('testdb');
      /** avvio l'animazione di caricamento */
      app.startWaiting("Recupero Dettagli ...");
+     /** ottengo i dati della segnalazione **/
      georep.db.getDoc(app.query.docId, true, function(err, data){
      	/** appena la chiamata ritorna termino l'animazione */
      	app.stopWaiting();
     	 if (err != undefined){
-    		 alert(err);
+    		 alert("Impossibile caricare la segnalazione: " + err);
     	 }
     	 else {
     		 $("#descrizione").text(data.msg);
@@ -300,10 +311,22 @@ app.loadRepo = function(e){
     		 app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
     			 $("#indirizzo").text(indirizzo);
     		 });
-    		 $("#nickName").text(data.userNick);
-    		 $("#mail").text(data.userMail);
     	 }
      });
+     /** ottengo nick e mail di chi ha effettuato la segnalazione **/
+     georep.db.setDBName('_users');
+     //console.log("userId: " + app.query.userId);
+     georep.db.getDoc(app.query.userId, false, function(err, data){
+     	 if (err != undefined){
+     		 alert(err);
+     	 }
+     	 else {
+     		 console.log(data);
+     		 $("#nickName").text(data.nick);
+     		 $("#mail").text(data.mail);
+     	 }
+      });
+     georep.db.setDBName('testdb');
 };
 
 /*-------------------------Sezione vista segnalazione ------------------------*/
@@ -426,8 +449,6 @@ app.FAKE_NICK = '-:RkFLRV9OSUNL:-';
 app.configServer = function(){
 	//console.log(window.device);
 	georep.user.set({
- /*    	name: "nome",
-       	password: "password",*/
 		name: device.uuid,
        	password: device.uuid,
        	nick: localStorage.userNick,
@@ -685,5 +706,5 @@ app.stopWaiting = function(){
 
 //-------------------- per la simulazione nel browser --------------------------	
 
-//window.device = {uuid: "2241a1dc464fa6ab"};
+//window.device = {uuid: "mau"};
 

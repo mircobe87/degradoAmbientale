@@ -296,8 +296,6 @@ var georep = {
 			} else {
 				var newDoc = {};
 				newDoc.userId = georep.user._id;
-				newDoc.userNick = georep.user.nick;
-				newDoc.userMail = georep.user.mail;
 				newDoc.title = doc.title;
 				newDoc.msg = doc.msg;
 				newDoc.loc = doc.loc;
