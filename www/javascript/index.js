@@ -299,9 +299,9 @@ app.loadRepo = function(e){
      app.startWaiting("Recupero Dettagli ...");
      /** ottengo i dati della segnalazione **/
      georep.db.getDoc(app.query.docId, true, function(err, data){
-     	/** appena la chiamata ritorna termino l'animazione */
-     	app.stopWaiting();
     	 if (err != undefined){
+    	     /** appena la chiamata ritorna termino l'animazione */
+    	     app.stopWaiting();
     		 alert("Impossibile caricare la segnalazione: " + err);
     	 }
     	 else {
@@ -311,6 +311,8 @@ app.loadRepo = function(e){
     		 app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
     			 $("#indirizzo").text(indirizzo);
     		 });
+    	     /** appena la chiamata ritorna termino l'animazione */
+    	     app.stopWaiting();
     	 }
      });
      /** ottengo nick e mail di chi ha effettuato la segnalazione **/
@@ -458,7 +460,7 @@ app.configServer = function(){
 	georep.db.setDBName('testdb');
 	georep.db.setURLServer({
 		proto: 'http://',
-		host: 'pram.homepc.it',
+		host: '192.168.0.111',
 		port: 5984
 	});
 };
