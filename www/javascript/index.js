@@ -331,6 +331,15 @@ app.loadRepo = function(e){
      georep.db.setDBName('testdb');
 };
 
+/* funzione che ripulisce i campi della view all'uscita dalla view stessa */
+app.hideRepo = function(){
+	 $("#nickName").text("");
+	 $("#mail").text("");
+	 $("#descrizione").text("");
+	 $("#repoDetail-title").text("");
+	 $("#indirizzo").text("");
+	 $("#repoImg").attr("src", "img/placeholder.png");
+};
 /*-------------------------Sezione vista segnalazione ------------------------*/
 app.segnalazione = {
 	title: "",
