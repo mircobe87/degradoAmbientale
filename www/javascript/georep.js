@@ -9,7 +9,7 @@ var georep = {
 				handlers: [ /* vettore dei gestori delle diverse views */
 					{
 						name: '_view', /* gestore delle views map-reduce */
-						views: ['allDocsByUser'] /* elenco delle views gestite da questo gestore */
+						views: ['allDocsByUser','allDocsByDate'] /* elenco delle views gestite da questo gestore */
 					},
 					{
 						name: '_spatial', /* gestore delle views spaziali di geocouch */
@@ -200,6 +200,51 @@ var georep = {
 			}
 		},
 		/**
+		 * Chiede al server le ultime nDocs segnalazioni inviate al server
+		 *
+		 * nDocs (number): numero i segnalazioni da chiedere
+		 * callback ( function(err, data) ): funzione chiamata al termine della
+		 *     richiesta al server. In caso di errore, 'err' contiene un oggetto
+		 *     che descrive l'errore altrimenti 'data' contiene il risultato
+		 *     della query.
+		 */
+		getLastDocs: function(nDocs, callback){
+			var viewPath = georep.constants.designDocs[0].name + '/' +
+			               georep.constants.designDocs[0].handlers[0].name + '/' +
+			               georep.constants.designDocs[0].handlers[0].views[1];
+			var queryOpts = '?limit=' + nDocs + '&descending=true';
+			
+			if (arguments.length < 1)
+				throw 'getLastDocs() richiede almeno un argomento: nDocs (number).';
+			else if (!nDocs || typeof nDocs != 'number' || nDocs <= 0)
+				throw 'parametro non valido: nDocs deve essere un numero maggiore di 0.';
+			else if (arguments.length > 1 && typeof callback != 'function')
+				throw 'parametro opzionale non valido: callback deve essere una funzione.';
+			else if (!georep.db.isConfigured())
+				throw 'Impossibile contattare il database: db non cofigurato';
+			else if (!georep.user.isConfigured())
+				throw 'Impossibile inviare la richiesta al server da un utente non configurato.';
+			else {
+				$.ajax({
+					url: georep.db.proto + georep.db.host + ':' + georep.db.port + '/' +
+						 georep.db.name + '/_design/' + viewPath + queryOpts,
+					type: 'GET',
+					headers: {
+						Accept: 'application/json',
+						Authorization: 'Basic ' + georep.user.base64
+					},
+					success: function(data){
+						if(callback)
+							callback(undefined, data);
+					},
+					error: function(jqXHR, textStatus, errorThrown){
+						if(callback)
+							callback({jqXHR: jqXHR, textStatus: textStatus, errorThrown: errorThrown},undefined);
+					}
+				});
+			}
+		},
+		/**
 		 * Chiede al DB tutti gli ID dei documenti creati da un utente.
 		 *
 		 * userId (string): identificatore unico di un utente.
@@ -282,6 +327,7 @@ var georep = {
 				var newDoc = {};
 				newDoc.userId = georep.user._id;
 				newDoc.title = doc.title;
+				newDoc.date = (new Date()).getTime();
 				newDoc.msg = doc.msg;
 				newDoc.loc = doc.loc;
 				newDoc._attachments = {
