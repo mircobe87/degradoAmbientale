@@ -22,7 +22,7 @@ var georep = {
         // delle richieste di signup 
         nodeJsServer: {
                 proto: 'http',
-                host: '192.168.0.111',
+                host: 'pram.homepc.it',
                 port: 1337
         }
 	},

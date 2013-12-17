@@ -465,7 +465,6 @@ app.configServer = function(){
        	nick: localStorage.userNick,
        	mail: localStorage.userMail
     });
-	georep.db.setAdmin('pratesim', 'cou111Viola<3');
 	georep.db.setDBName('testdb');
 	georep.db.setURLServer({
 		proto: 'http://',
@@ -484,21 +483,31 @@ app.configServer = function(){
  */
 app.initOptionView = function(){
 	$('#input-ok').on('click', function(){
-		var currentNick = (localStorage.userNick == app.FAKE_NICK)?'':localStorage.userNick;
-		var currentMail = (localStorage.userMail == app.FAKE_MAIL)?'':localStorage.userMail;
-		var newNick = $('#input-nick')[0].value;
-		var newMail = $('#input-mail')[0].value;
-		console.log('newNick: ' + newNick);
-		console.log('newMail: ' + newMail);
-		if(newNick != currentNick || newMail != currentMail)
-			app.saveOptions(newNick, newMail);
-		else {
-			/**
-			 * qui la mappa non viene inizializzata perche' questo ramo viene eseguito
-			 * solo se ci sono gia' delle info valide configurate e quindi la mappa
-			 * e' gia' stata configurata.
-			 */
-			app.navigate('#map-view');	
+		if (localStorage.userNick == app.FAKE_NICK || localStorage.userMail == app.FAKE_MAIL){
+		// allora siamo al primo avvio e bisogna fare una signup e gestire
+		// tutti gli errori del caso.
+		// Da tenere a mente che siamo fermi nella view delle opzioni e la mappa
+		// non è ancora stata inizializzata.
+			var newNick = $('#input-nick')[0].value;
+			var newMail = $('#input-mail')[0].value;
+			app.signUpNewUser(newNick, newMail);
+		}else{
+		// i dati locali sono consistenti e quindi al click bisongna semmai fare
+		// una update.
+		// Da tenere a mente che in questo caso è l'utente che ha navigato in
+		// questa view delle opzioni e quindi la mappa è già inizializzata
+			var currentNick = localStorage.userNick;
+			var currentMail = localStorage.userMail;
+			var newNick = $('#input-nick')[0].value;
+			var newMail = $('#input-mail')[0].value;
+			if(newNick != currentNick || newMail != currentMail) {
+			// i dati sono stati modificati e quindi vanno aggiornati in locale
+			// sul server.
+				app.saveOptions(newNick, newMail);
+			} else {
+			// nessuna modifica, si torno alla mappa.
+				app.navigate('#map-view');	
+			}
 		}
 	});
 };
@@ -514,7 +523,13 @@ app.initOptionView = function(){
 app.showOptionView = function(){
 	var currentNick = (localStorage.userNick == app.FAKE_NICK)?'':localStorage.userNick;
 	var currentMail = (localStorage.userMail == app.FAKE_MAIL)?'':localStorage.userMail;
+
+	//console.log("currentNick: " + currentNick);
+
 	$('#input-nick').attr('value',currentNick);
+	if ( currentNick && currentNick != '' ){
+		$('#input-nick').attr('disabled','disabled');
+	}
 	$('#input-mail').attr('value',currentMail);
 };
 
@@ -530,93 +545,45 @@ app.showOptionView = function(){
  * Se l'utente non esiste lo crea e rimena nella view delle opzioni.
  */
 app.loader = function() {
-	if(!localStorage.userNick || localStorage.userNick == app.FAKE_NICK ||
-	   !localStorage.userMail || localStorage.userMail == app.FAKE_MAIL ){
-	   console.log('nuovo utente o incompleto');
-		/**
-		 * a questo punto o e' il primo avvio oppure sono stati cancellati 
-		 * i dati della app oppure e' stato creato un utente non si e' riusciti
-		 * ad aggiornare le sue opzioni.
-		 */
-		
-		/** creo delle opzioni 'fake' */
+	if(!localStorage.userNick || !localStorage.userMail){
+	// primo avvio o dati locali assenti
+		 /** creo delle opzioni 'fake' */
 		localStorage.userNick = app.FAKE_NICK;
 		localStorage.userMail = app.FAKE_MAIL;
 		app.configServer();
 		
-		/** controllo se l'utente esiste sul server */
 		georep.user.check(function(err, data){
 			if(!err){
 				if(data.isRegistered){
-					//console.log('utente gia' registrato');
-					/**
-					 * l'utente esiste sul server quindi bisogna scaricare le sue info
-					 * per correggere le opzioni 'fake'.
-					 */
+				// utente registrato
 					georep.user.getRemote(function(err,data){
 						if(!err){
-							/**
-							 * Se i dati scaricati sono ok li memorizzo e passo alla mappa
-							 */
-							if(data.nick != app.FAKE_NICK && data.mail != app.FAKE_MAIL){
-								console.log('dati utente registrato recuperati');
-								localStorage.userNick=data.nick;
-								localStorage.userMail=data.mail;
-								app.configServer();
-								
-								app.initMap();
-								app.navigate('#map-view');
-							}else{
-								/**
-								 * se i dati scaricati sono da sistemare si rimane qui nella
-								 * view delle opzioni
-								 */
-								//console.log('utente registrato ma da completare');
-							}
-						}else{
-							alert('Impossibile contattare il server per scaricare le opzioni dell\'utente.');
-						}
-					});
-					
-				}else{
-					/**
-					 * L'utente non esiste quindi bisogna registrarlo
-					 * Viene inizialmente fatto un utente con info 'fake' e successivamente si
-					 * aggiornano le sue informazioni.
-					 */
-					console.log('utente nuovo');
+							localStorage.userNick = data.nick;
+							localStorage.userMail = data.mail;
+							app.configServer();
 
-					georep.user.signup(function(err,data){
-						if(!err){
-							console.log('utente creato sul server');
-							/**
-							 * A questo punto l'utente e' stato creato ma bisogna raccoglie le
-							 * le informazione su email e nick e quindi si rimane in questa view
-							 * delle opzioni.
-							 */
+							app.initMap();
+							app.navigate('#map-view');
 						}else{
-							alert('Impossibile comunicare con il server: utente non creato');
-							/**
-							 * non si e' riusciti a creare l'utente nuovo sul server quindi si
-							 * eliminano le info 'fake' locali cosi' da ripulire l'ambiente per
-							 * il prossimo avvio della app.
-							 */
-							 localStorage.clear();
+						// errore comunicazione della getRemote
 						}
 					});
+				}else{
+				// utente non registrato
+					// si rimane fermi qui nella view delle opzioni e la funzione
+					// di click del bottone 'fatto' penserà a registrare l'utente.
+					// semmai qui bisogna settare l'handler giusto per quel bottone
+					// perchè deve fare una signup
 				}
 			}else{
-				/** impossibile controllare se l'utente e' registrato */
-				alert('loader: Impossibile contattare il server');
+			// errore comunicazione della check
 			}
 		});
-	} else {
-		/**
-		 * localmente sono presenti info non 'fake' e quindi si presume che l'utente
-		 * sia gia' registrato sul server.
-		 * Si configura il sistema con queste info e ci si sposta sulla view della mappa
-		 */
+		
+	}else{
+	// non il primo avvio con dati locali consistenti
 		app.configServer();
+
 		app.initMap();
 		app.navigate('#map-view');
 	}
@@ -670,6 +637,22 @@ app.saveOptions = function(nick, mail){
 };
 
 /**
+ * Registra un nuovo utente sul server inviando la richiesta al server nodeJS.
+ * Viene chiamata al click sul bottone di conferma nella finestra delle opzioni
+ * al primo avvio e quindi la mappa non è ancora inizializzata.
+ * Per gestire il caso in cui il nick è duplicato è sufficiente lanciare una alert
+ * e lasciare localStorage.userNick = app.FAKE_NICK e localStorage.userMail = app.FAKE_MAIL
+ * così che un successivo click esegua sempre questa funzione.
+ */ 
+app.signUpNewUser = function(nick, mail){
+	if (!nick || !mail)
+		alert('Inserire NickName e E-Mail');
+	else {
+		// TODO
+	}
+};
+
+/**
  * Funzione che deve essere eseguita per prima quando l'intera pagina e stata
  * completamente caricata.
  */
@@ -716,6 +699,6 @@ app.stopWaiting = function(){
 };
 
 //-------------------- per la simulazione nel browser --------------------------	
-//window.device = {uuid: "mau"};
+window.device = {uuid: "MiBe"};
 
 
