@@ -552,6 +552,7 @@ app.loader = function() {
 		localStorage.userMail = app.FAKE_MAIL;
 		app.configServer();
 		
+		app.startWaiting();
 		georep.user.check(function(err, data){
 			if(!err){
 				if(data.isRegistered){
@@ -563,12 +564,17 @@ app.loader = function() {
 							app.configServer();
 
 							app.initMap();
+							app.stopWaiting();
 							app.navigate('#map-view');
 						}else{
 						// errore comunicazione della getRemote
+							app.stopWaiting();
+							localStorage.clear();
+							alert("Errore Server. Prova più tardi");
 						}
 					});
 				}else{
+					app.stopWaiting();
 				// utente non registrato
 					// si rimane fermi qui nella view delle opzioni e la funzione
 					// di click del bottone 'fatto' penserà a registrare l'utente.
@@ -576,7 +582,9 @@ app.loader = function() {
 					// perchè deve fare una signup
 				}
 			}else{
-			// errore comunicazione della check
+				app.stoptWaiting();
+				localStorage.clear();
+				alert("Errore Server. Prova più tardi");
 			}
 		});
 		
@@ -601,6 +609,7 @@ app.saveOptions = function(nick, mail){
 		 * Aggiorna le info dell'utente sia sul server che locali (configurazioni
 		 * di georep).
 		 */
+		app.startWaiting();
 		georep.user.update({
 			name: georep.user.name,
 			password: georep.user.password,
@@ -626,11 +635,13 @@ app.saveOptions = function(nick, mail){
 				 * anche piu' volte nella app e quindi evito di fare del casino inizializzando
 				 * piu' volte la mappa
 				 */
+				app.stopWaiting();
 				if(!app.map)
 					app.initMap();
 				app.navigate('#map-view');
 			}else{
-				alert('Impossibile contattare il server: aggiornamento non riuscito.');
+				app.stopWaiting();
+				alert("Errore Server. Prova più tardi");
 			}
 		});
 	}
@@ -648,19 +659,16 @@ app.signUpNewUser = function(nick, mail){
 	if (!nick || !mail)
 		alert('Inserire NickName e E-Mail');
 	else {
-		var usrToSignup = {
-			name: georep.user.name,
-			password: georep.user.password,
-			nick: nick,
-			mail: mail
-		};
-		georep.user.signup(usrToSignup, function(err, data){
+		
+		/* aggiorno l'utente locale */
+		localStorage.userNick = nick;
+		localStorage.userMail = mail;
+		app.configServer();
+		
+		app.startWaiting();
+		georep.user.signup(function(err, data){
 			if(!err){
-				/* registrazione completata sul server */
-				localStorage.userNick = nick;
-				localStorage.userMail = mail;
-				app.configServer();
-				
+				app.stopWaiting();
 				if(!app.map)
 					app.initMap();
 				app.navigate('#map-view');
@@ -669,8 +677,17 @@ app.signUpNewUser = function(nick, mail){
 				 * quindi è necessario che l'utente ne scelga uno diverso
 				 */
 				if (JSON.parse(err.jqXHR.responseText).nickDuplicate){
+					/* vanno settati a fake in modo che premere il tasto "fatto" comporti la riesecuzione della signup
+					 * e non della update
+					 */
+					localStorage.userNick = app.FAKE_NICK;
+					localStorage.userMail = app.FAKE_MAIL;
+					app.configServer();
+					app.stopWaiting();
 					alert("Questo nick non è disponibile.");
 				} else{
+					localStorage.clear();
+					app.stopWaiting();
 					alert("Errore Server. Prova più tardi.");
 				}
 			}
@@ -725,6 +742,6 @@ app.stopWaiting = function(){
 };
 
 //-------------------- per la simulazione nel browser --------------------------	
-window.device = {uuid: "MiBe"};
+//window.device = {uuid: "MiBe"};
 
 
