@@ -648,7 +648,33 @@ app.signUpNewUser = function(nick, mail){
 	if (!nick || !mail)
 		alert('Inserire NickName e E-Mail');
 	else {
-		// TODO
+		var usrToSignup = {
+			name: georep.user.name,
+			password: georep.user.password,
+			nick: nick,
+			mail: mail
+		};
+		georep.user.signup(usrToSignup, function(err, data){
+			if(!err){
+				/* registrazione completata sul server */
+				localStorage.userNick = nick;
+				localStorage.userMail = mail;
+				app.configServer();
+				
+				if(!app.map)
+					app.initMap();
+				app.navigate('#map-view');
+			} else {
+				/* se il messaggio di errore contiene il campo nickDuplicate esiste un utente con lo stesso nick
+				 * quindi è necessario che l'utente ne scelga uno diverso
+				 */
+				if (JSON.parse(err.jqXHR.responseText).nickDuplicate){
+					alert("Questo nick non è disponibile.");
+				} else{
+					alert("Errore Server. Prova più tardi.");
+				}
+			}
+		});
 	}
 };
 
