@@ -741,6 +741,36 @@ app.stopWaiting = function(){
 	app.hideLoading();
 };
 
+//-------------------- View Delle Ultime Segnalazioni --------------------------
+
+/**
+ * Realizza il padding di un numero.
+ *
+ * n (number): numero
+ * width (number): numero di cifre
+ * padder (...): simbolo da usare per il padding
+ */
+app.numberPadding = function(n, width, padder){
+	padder = padder || '0';
+	n = n + '';
+	return n.length >= width ? n : new Array(width - n.length + 1).join(padder) + n;
+};
+
+/**
+ * Data una data espressa in millisecondi da EPOC, ritorna una stringa
+ * nel formato GG/MM/AAAA - hh:mm'ss".
+ *
+ * milsToEPOC (number): millisecondi trascordi da EPOC
+ */
+app.dataToString = function(milsToEPOC){
+	return app.numberPadding(milsToEPOC.getDate(), 2) + '/' +
+	       app.numberPadding( (milsToEPOC.getMonth() + 1), 2) + '/' +
+	       app.numberPadding(milsToEPOC.getFullYear(), 4) + ' - ' +
+	       app.numberPadding(milsToEPOC.getHours(), 2) + ':' +
+	       app.numberPadding(milsToEPOC.getMinutes(), 2) + '\'' +
+	       app.numberPadding(milsToEPOC.getSeconds(),2) + '"';
+};
+
 //-------------------- per la simulazione nel browser --------------------------	
 //window.device = {uuid: "MiBe"};
 
