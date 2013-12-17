@@ -17,14 +17,17 @@ var georep = {
 					}
 				]
 			}
-		]
+		],
+		// queste info sono utilizzate per comporre l'URL utilizzato nell'invio
+        // delle richieste di signup 
+        nodeJsServer: {
+                proto: 'http',
+                host: '192.168.0.111',
+                port: 1337
+        }
 	},
 	// sezione relativa al database remoto
 	db: {
-		admin: {
-			base64: undefined, /* credenziali dell'amministratore utilizzate per il login sul DB codificate in 'base64' */
-			configured: false  /* indica se l'amministratore e' stato configurato */
-		},
 		configured: false, /* indica se DB e' stato configurato */
 		name: undefined, /* nome del db */
 		host: undefined, /* IP o Hostname della macchin */
@@ -39,28 +42,10 @@ var georep = {
 				return true;
 			else {
 				this.configured = (
-					this.admin.configured == true &&
 					this.name  !=  undefined && this.host  != undefined &&
 					this.port  !=  undefined && this.proto != undefined
 				);
 				return this.configured;
-			}
-		},
-		/**
-		 * Setta l'utente amministratore del server.
-		 *
-		 * name ( string ):
-		 * passwd: ( string ):
-		 */
-		setAdmin: function(name, passwd){
-			if (arguments.length != 2) {
-				throw 'setAdmin() richiede esattamente 2 argomenti: name (string), passwd (string).';
-			} else if (!name || !passwd || typeof name != 'string' || typeof passwd != 'string') {
-				throw 'Impossibile settare l\'amministratore, parametri non validi.';
-			} else {
-				georep.db.admin.base64 = btoa(name+':'+passwd);
-				georep.db.admin.configured = true;
-				georep.db.isConfigured();
 			}
 		},
 		/**
@@ -405,7 +390,7 @@ var georep = {
 			if( arguments.length != 1){
 				throw 'getRemote() richiede un argomento: callback (function(err, data)).';	
 			} else if (typeof callback != 'function'){
-				throw 'Parametro non valido: callback deve essere \'function\'.'
+				throw 'Parametro non valido: callback deve essere \'function\'.';
 			} else {
 				$.ajax({
 					url: georep.db.proto + georep.db.host + ':' +
@@ -489,10 +474,11 @@ var georep = {
 				throw 'Il parametro opzionale deve essere una funzione';
 			} else {
 				$.ajax({
-					url: georep.db.proto + georep.db.host + ':' +
-						 georep.db.port + '/_users/' + georep.user._id,
-					type: 'PUT',
+					url: georep.constants.nodeJsServer.proto + "://" + georep.constants.nodeJsServer.host + ':' +
+						 georep.constants.nodeJsServer.port + '/_users',
+					type: 'POST',
 					data: JSON.stringify({
+						_id:  georep.user._id,
 						name: georep.user.name,
 						password: georep.user.password,
 						nick: georep.user.nick,
@@ -501,7 +487,7 @@ var georep = {
 						roles: georep.user.roles
 					}),
 					headers: {
-						'Authorization': 'Basic ' + georep.db.admin.base64
+						'Authorization': 'Basic ' + georep.user.base64
 					},
 					success: function(data){
 						/*console.log("Utente registrato con successo! " +data);*/
