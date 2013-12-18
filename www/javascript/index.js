@@ -701,6 +701,7 @@ app.signUpNewUser = function(nick, mail){
  */
 app.initialize = function() {
     this.bindEvents();
+    app.createLastListView();
 	app.createViewList();
 };
 
@@ -769,6 +770,45 @@ app.dataToString = function(milsToEPOC){
 	       app.numberPadding(milsToEPOC.getHours(), 2) + ':' +
 	       app.numberPadding(milsToEPOC.getMinutes(), 2) + '\'' +
 	       app.numberPadding(milsToEPOC.getSeconds(),2) + '"';
+};
+
+/* dataSource per la lastView */
+app.lastRepDataSource = new kendo.data.DataSource({ });
+
+/* crea la listView per contenere le ultime segnalazioni inviate sul server */
+app.createLastListView = function (){
+	$("#lastViewContent").kendoMobileListView({
+		dataSource: app.lastRepDataSource,
+		click: function(e) {
+			 /* Ogni elemento della lista è un oggetto del tipo {id: ..., key: ..., value: ...}
+			 */
+			app.query.docId = e.dataItem.id;
+			app.query.userId = e.dataItem.value.userId;
+		    /* devo aprire la view per la visualizzazione completa della segnalazione con id e.dataItem.id */
+		    app.navigate("#view-repoDetail");
+		},
+		/* in questo modo all'interno della lista viene visualizzato solo il campo value 
+		 * (cioè il titolo della segnalazione). 
+		 */
+		template: "<h3>#:value.title#</h3><p>#:app.dateToString(key)#</p>"
+	}); 
+};
+
+/* prende i titoli, di tutte le segnalazioni effettuate dall'utente, dal server couchdb. 
+ * Poi li inserisce nella listView */
+app.getLastDataFromServer = function(){
+	georep.db.getLastDocs(10, function(err, data){
+		if (err != undefined){
+			alert("Impossibile caricare i dati dal server");
+		}
+		else{
+			/* inserisce i dati contenuti in data.rows nella listView.
+			 * data.rows è il vettore restituito dalla getUserDocs in caso di successo.
+			 * Ogni elemento del vettore è del tipo {id: ..., key: ..., value: ...}
+			 */
+			app.lastRepDataSource.data(data.rows);
+		}
+	});
 };
 
 //-------------------- per la simulazione nel browser --------------------------	
