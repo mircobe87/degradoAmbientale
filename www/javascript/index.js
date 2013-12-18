@@ -759,17 +759,18 @@ app.numberPadding = function(n, width, padder){
 
 /**
  * Data una data espressa in millisecondi da EPOC, ritorna una stringa
- * nel formato GG/MM/AAAA - hh:mm'ss".
+ * nel formato GG/MM/AAAA - hh:mm:ss
  *
  * milsToEPOC (number): millisecondi trascordi da EPOC
  */
-app.dataToString = function(milsToEPOC){
-	return app.numberPadding(milsToEPOC.getDate(), 2) + '/' +
-	       app.numberPadding( (milsToEPOC.getMonth() + 1), 2) + '/' +
-	       app.numberPadding(milsToEPOC.getFullYear(), 4) + ' - ' +
-	       app.numberPadding(milsToEPOC.getHours(), 2) + ':' +
-	       app.numberPadding(milsToEPOC.getMinutes(), 2) + '\'' +
-	       app.numberPadding(milsToEPOC.getSeconds(),2) + '"';
+app.dateToString = function(milsToEPOC){
+	var d = new Date(milsToEPOC);
+	return app.numberPadding( d.getDate(),      2) + '/'   +
+	       app.numberPadding( d.getMonth() + 1, 2) + '/'   +
+	       app.numberPadding( d.getFullYear(),  4) + ' - ' +
+	       app.numberPadding( d.getHours(),     2) + ':'   +
+	       app.numberPadding( d.getMinutes(),   2) + ':'   +
+	       app.numberPadding( d.getSeconds(),   2)         ;
 };
 
 /* dataSource per la lastView */
@@ -780,32 +781,42 @@ app.createLastListView = function (){
 	$("#lastViewContent").kendoMobileListView({
 		dataSource: app.lastRepDataSource,
 		click: function(e) {
-			 /* Ogni elemento della lista è un oggetto del tipo {id: ..., key: ..., value: ...}
-			 */
+			// Ogni elemento della lista è un oggetto del tipo:
+			// {
+			//     id: ...,
+			//     key: <data in milsToEpoc>,
+			//     value: {
+			//         userId: ...,
+			//         title: ...
+			//     }
+			// }
+			
+			// passo id e userId ad app.query per permettere alla view dei dettagli
+			// di recuperare il documento completo dal server
 			app.query.docId = e.dataItem.id;
 			app.query.userId = e.dataItem.value.userId;
-		    /* devo aprire la view per la visualizzazione completa della segnalazione con id e.dataItem.id */
+		    // apro la view dei dettagli
 		    app.navigate("#view-repoDetail");
 		},
-		/* in questo modo all'interno della lista viene visualizzato solo il campo value 
-		 * (cioè il titolo della segnalazione). 
-		 */
+		// in questo modo ogni elemento della lista avra' questo aspetto:
+		// -------------------------------
+		//   Titolo Della Segnalazione
+		//   GG/MM/AAAA - hh:mm:ss
+		// -------------------------------
 		template: "<h3>#:value.title#</h3><p>#:app.dateToString(key)#</p>"
 	}); 
 };
 
-/* prende i titoli, di tutte le segnalazioni effettuate dall'utente, dal server couchdb. 
- * Poi li inserisce nella listView */
+/* Prende le utlime segnalazioni inviate al server e le passa alla listView */
 app.getLastDataFromServer = function(){
 	georep.db.getLastDocs(10, function(err, data){
 		if (err != undefined){
 			alert("Impossibile caricare i dati dal server");
 		}
 		else{
-			/* inserisce i dati contenuti in data.rows nella listView.
-			 * data.rows è il vettore restituito dalla getUserDocs in caso di successo.
-			 * Ogni elemento del vettore è del tipo {id: ..., key: ..., value: ...}
-			 */
+			// inserisce i dati contenuti in data.rows nella listView.
+			// data.rows è il vettore restituito dalla getLastDocs in caso di successo.
+			// Ogni elemento del vettore è del tipo {id: ..., key: ..., value: ...}
 			app.lastRepDataSource.data(data.rows);
 		}
 	});

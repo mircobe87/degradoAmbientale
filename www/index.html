@@ -66,7 +66,8 @@
 				<li>Men&ugrave
 					<ul>
 						<li data-icon="globe"><a href="#map-view" data-transition="none">Mappa</a></li>
-						<li data-icon="list-icon"><a href="#list-view" data-transition="none">Segnalazioni</a></li>
+						<li data-icon="list-icon"><a href="#list-view" data-transition="none">Mie Segnalazioni</a></li>
+						<li data-icon="list-icon"><a href="#last-view" data-transition="none">Ultime Segnalazioni</a></li>
 						<li data-icon="compose"><a href="#new-view" data-transition="none">Segnala</a></li>
 					</ul>
 				</li>
@@ -77,11 +78,6 @@
 				</li>
 			</ul>
 		</div>
-		
-		<!-- View Last -->
-        <div data-role="view" data-title="Degrado Ambientale" id="last-view" data-layout="default" data-show="app.getLastDataFromServer" >
-		    <ul data-role="listView" id="lastViewContent" data-style="inset"></ul>
-        </div>
         
 		<!-- View Map -->
         <div data-role="view"  data-title="Degrado Ambientale" id="map-view" data-layout="default" data-stretch="true">
@@ -91,6 +87,12 @@
         <div data-role="view" data-title="Degrado Ambientale" id="list-view" data-layout="default" data-show="app.getDataFromServer" >
 		    <ul data-role="listView" id="listViewContent" data-style="inset"></ul>
         </div>
+        
+        <!-- View Last -->
+        <div data-role="view" data-title="Degrado Ambientale" id="last-view" data-layout="default" data-show="app.getLastDataFromServer" >
+		    <ul data-role="listView" id="lastViewContent" data-style="inset"></ul>
+        </div>
+        
         <!-- View New -->
         <div data-role="view" data-title="Degrado Ambientale" id="new-view" data-use-native-scrolling="true" data-layout="default" data-show="app.clearRepo">
 		    <ul data-role="listview" data-style="inset">
