@@ -10,6 +10,12 @@
 	-webkit-flex-direction: column;
 }
 
+/* stile navbar su android */
+.km-android .km-navbar{
+	height: 48px;
+	display: inline-block;
+	padding: 0;
+}
 /* modifica lo stile del form di classe 'newformstyle' */
 .km-root .newformstyle .km-listview label {
   width: 100%;

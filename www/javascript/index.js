@@ -262,7 +262,7 @@ app.createViewList = function (){
 		/* in questo modo all'interno della lista viene visualizzato solo il campo value 
 		 * (cioè il titolo della segnalazione). 
 		 */
-		template: "#:value#"
+		template: "<h5>#:value#</h5>"
 	}); 
 };
 
@@ -812,7 +812,7 @@ app.createLastListView = function (){
 		//   Titolo Della Segnalazione
 		//   GG/MM/AAAA - hh:mm:ss
 		// -------------------------------
-		template: "<h3>#:value.title#</h3><p>#:app.dateToString(key)#</p>"
+		template: "<h5>#:value.title#</h5><p>#:app.dateToString(key)#</p>"
 	}); 
 };
 
