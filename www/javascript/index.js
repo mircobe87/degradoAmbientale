@@ -408,7 +408,7 @@ app.sendRepo = function (){
 							console.log(data);
 							alert("Segnalazione effettuata!");
 							app.clearRepo();
-							app.navigate("#map-view");
+							app.navigate(app.mainView);
 						}else{
 							console.log(err);
 							alert("Invio segnalazione fallito!...Prova di nuovo");
@@ -451,6 +451,11 @@ app.clearRepo = function(){
  */
 app.FAKE_MAIL = '-:RkFLRV9NQUlM:-';
 app.FAKE_NICK = '-:RkFLRV9OSUNL:-';
+
+/**
+ * ID della view da mostrare all'avvio
+ */
+app.mainView = '#last-view';
 
 /**
  * Configura il sistema per poter essere in grado di accedere al server remoto.
@@ -506,7 +511,7 @@ app.initOptionView = function(){
 				app.saveOptions(newNick, newMail);
 			} else {
 			// nessuna modifica, si torno alla mappa.
-				app.navigate('#map-view');	
+				app.navigate(app.mainView);	
 			}
 		}
 	});
@@ -565,7 +570,7 @@ app.loader = function() {
 
 							app.initMap();
 							app.stopWaiting();
-							app.navigate('#map-view');
+							app.navigate(app.mainView);
 						}else{
 						// errore comunicazione della getRemote
 							app.stopWaiting();
@@ -593,7 +598,7 @@ app.loader = function() {
 		app.configServer();
 
 		app.initMap();
-		app.navigate('#map-view');
+		app.navigate(app.mainView);
 	}
 };
 
@@ -638,7 +643,7 @@ app.saveOptions = function(nick, mail){
 				app.stopWaiting();
 				if(!app.map)
 					app.initMap();
-				app.navigate('#map-view');
+				app.navigate(app.mainView);
 			}else{
 				app.stopWaiting();
 				alert("Errore Server. Prova più tardi");
@@ -671,7 +676,7 @@ app.signUpNewUser = function(nick, mail){
 				app.stopWaiting();
 				if(!app.map)
 					app.initMap();
-				app.navigate('#map-view');
+				app.navigate(app.mainView);
 			} else {
 				/* se il messaggio di errore contiene il campo nickDuplicate esiste un utente con lo stesso nick
 				 * quindi è necessario che l'utente ne scelga uno diverso
