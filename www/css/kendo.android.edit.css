@@ -5,7 +5,8 @@
 }
 
 /* navbar in alto */
-.km-android .km-view {
+.km-root .km-android .km-view {
+	-webkit-box-direction: normal;
 	-webkit-flex-direction: column;
 }
 

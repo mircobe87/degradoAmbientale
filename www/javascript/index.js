@@ -233,6 +233,9 @@ app.updateMap = function(){
 	});
 };
 
+app.viewMapShow = function (){
+	google.maps.event.trigger(map, "resize");
+};
 // sezione della LISTA SEGNALAZIONI --------------------------------------------
 
 /* dataSource per la listView */
