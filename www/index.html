@@ -67,7 +67,7 @@
 					<ul>
 						<li data-icon="globe"><a href="#map-view" data-transition="none">Mappa</a></li>
 						<li data-icon="list-icon"><a href="#list-view" data-transition="none">Mie Segnalazioni</a></li>
-						<li data-icon="list-icon"><a href="#last-view" data-transition="none">Ultime Segnalazioni</a></li>
+						<li data-icon="recents"><a href="#last-view" data-transition="none">Ultime Segnalazioni</a></li>
 						<li data-icon="compose"><a href="#new-view" data-transition="none">Segnala</a></li>
 					</ul>
 				</li>
@@ -79,33 +79,8 @@
 			</ul>
 		</div>
         
-		<!-- View Map -->
-        <div data-role="view"  data-title="Degrado Ambientale" id="map-view" data-layout="default" data-stretch="true">
-       		<div id="map" style="width:100%;"></div>
-        </div>
-        <!-- View List -->
-        <div data-role="view" data-title="Degrado Ambientale" id="list-view" data-layout="default" data-show="app.getDataFromServer" >
-		    <ul data-role="listView" id="listViewContent" data-style="inset"></ul>
-        </div>
+        <div data-role="view" data-title="Degrado Ambientale" id="fake-view"></div>
         
-        <!-- View Last -->
-        <div data-role="view" data-title="Degrado Ambientale" id="last-view" data-layout="default" data-show="app.getLastDataFromServer" >
-		    <ul data-role="listView" id="lastViewContent" data-style="inset"></ul>
-        </div>
-        
-        <!-- View New -->
-        <div data-role="view" data-title="Degrado Ambientale" id="new-view" data-use-native-scrolling="true" data-layout="default" data-show="app.clearRepo">
-		    <ul data-role="listview" data-style="inset">
-				<li><label for="titoloToRepo">Titolo: <input type="text" id="titoloToRepo"/></label></li>
-				<li><label for="descrizioneToRepo">Descrizione: <input type="text" id="descrizioneToRepo"/></label></li>
-				<li><label>Foto:<img id="imgToRepo" alt="fotosegnalazione" src="img/placeholder.png" style="width:  100%; border: 0px;"></label></li>
-			</ul>
-			
-			<div style="text-align: center;">
-				<a data-role="button" data-icon="camera" style="margin-left: 1em; margin-right: 0.5em;" data-click="app.getPhoto">Scatta Foto</a>
-				<a data-role="button" data-icon="action" style="margin-left: 1em; margin-right: 0.5em;" data-click="app.sendRepo">Invia Segnalazione</a>
-			</div>	
-        </div>
         <!-- View User -->
         <div data-role="view" data-title="Degrado Ambientale" id="user-view" data-use-native-scrolling="true" class="newformstyle" data-show="app.showOptionView" data-init="app.initOptionView">
         	<form>
@@ -130,7 +105,7 @@
 					<ul>
 						<li>
 							Un <b>nickname</b> serve per differenziarsi dagli altri utenti e comparir&agrave come
-							nome dell'autore di tutte le tue segnalazioni. Puoi cambiarlo in qualsiasi momento.
+							nome dell'autore di tutte le tue segnalazioni.
 						</li>
 					</ul>
 				</li>
@@ -139,7 +114,7 @@
 						<li>
 							Un indirizzo <b>e-mail</b> &egrave utile per ricevere segnalazioni e informazioni sia
 							dall'amministratore che dagli altri utenti. L'indirizzo di posta elettronica &egrave
-							visibile nei dettagli di una segnalazione. Poi combiarlo in qualsiasi momento.
+							visibile nei dettagli di una segnalazione. Puoi combiarlo in qualsiasi momento.
 						</li>
 					</ul>
 				</li>
@@ -147,6 +122,34 @@
         	<p style="text-align: center;">
 	        	<a data-role="button" id="input-ok">Fatto</a>
         	</p>
+        </div>
+        
+		<!-- View Map -->
+        <div data-role="view"  data-title="Degrado Ambientale" id="map-view" data-layout="default" data-stretch="true" data-init="app.initMap">
+       		<div id="map" style="width:100%;"></div>
+        </div>
+        <!-- View List -->
+        <div data-role="view" data-title="Degrado Ambientale" id="list-view" data-layout="default" data-show="app.getDataFromServer" >
+		    <ul data-role="listView" id="listViewContent" data-style="inset"></ul>
+        </div>
+        
+        <!-- View Last -->
+        <div data-role="view" data-title="Degrado Ambientale" id="last-view" data-layout="default" data-show="app.getLastDataFromServer" >
+		    <ul data-role="listView" id="lastViewContent" data-style="inset"></ul>
+        </div>
+        
+        <!-- View New -->
+        <div data-role="view" data-title="Degrado Ambientale" id="new-view" data-use-native-scrolling="true" data-layout="default" data-show="app.clearRepo">
+		    <ul data-role="listview" data-style="inset">
+				<li><label for="titoloToRepo">Titolo: <input type="text" id="titoloToRepo"/></label></li>
+				<li><label for="descrizioneToRepo">Descrizione: <input type="text" id="descrizioneToRepo"/></label></li>
+				<li><label>Foto:<img id="imgToRepo" alt="fotosegnalazione" src="img/placeholder.png" style="width:  100%; border: 0px;"></label></li>
+			</ul>
+			
+			<div style="text-align: center;">
+				<a data-role="button" data-icon="camera" style="margin-left: 1em; margin-right: 0.5em;" data-click="app.getPhoto">Scatta Foto</a>
+				<a data-role="button" data-icon="action" style="margin-left: 1em; margin-right: 0.5em;" data-click="app.sendRepo">Invia Segnalazione</a>
+			</div>	
         </div>
         
         <!--  View Dettagli Segnalazione -->

@@ -67,6 +67,7 @@ app.markCluster;
  */
 app.initMap = function(e){
 	//console.log("initmap");
+	//alert("InitMap");
 	
 	/** elemento nel DOM che conterra' la mappa */	
 	var mapElement = $("#map")[0];
@@ -568,7 +569,7 @@ app.loader = function() {
 							localStorage.userMail = data.mail;
 							app.configServer();
 
-							app.initMap();
+							//app.initMap();
 							app.stopWaiting();
 							app.navigate(app.mainView);
 						}else{
@@ -597,7 +598,7 @@ app.loader = function() {
 	// non il primo avvio con dati locali consistenti
 		app.configServer();
 
-		app.initMap();
+		//app.initMap();
 		app.navigate(app.mainView);
 	}
 };
@@ -641,8 +642,8 @@ app.saveOptions = function(nick, mail){
 				 * piu' volte la mappa
 				 */
 				app.stopWaiting();
-				if(!app.map)
-					app.initMap();
+				//if(!app.map)
+				//	app.initMap();
 				app.navigate(app.mainView);
 			}else{
 				app.stopWaiting();
@@ -674,8 +675,8 @@ app.signUpNewUser = function(nick, mail){
 		georep.user.signup(function(err, data){
 			if(!err){
 				app.stopWaiting();
-				if(!app.map)
-					app.initMap();
+				//if(!app.map)
+				//	app.initMap();
 				app.navigate(app.mainView);
 			} else {
 				/* se il messaggio di errore contiene il campo nickDuplicate esiste un utente con lo stesso nick
