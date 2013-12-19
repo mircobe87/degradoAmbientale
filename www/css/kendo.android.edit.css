@@ -41,3 +41,17 @@
 .km-root .km-ios7 .km-view.newformstyle .km-listview input {
   padding: .4em 0;
 }
+
+/* tema leggermente meno nero */
+.km-android .km-view .km-content {
+    background-color: rgb(76, 76, 76);
+    background-image: -webkit-gradient(linear,50% 0,50% 100%,color-stop(0, rgba(0,0,0,.8)),color-stop(1, rgba(0,0,0,.2)));
+    background-image: -moz-linear-gradient(50% 0,50% 100%,rgba(0,0,0,.8),rgba(0,0,0,.2));
+    background-image: -ms-linear-gradient(50% 0,50% 100%,rgba(0,0,0,.8),rgba(0,0,0,.2));
+    background-repeat: repeat;
+    background-position: 0 0;
+}
+.km-android .km-view .km-navbar {
+    background-color: rgb(25, 25, 25);
+}
+
