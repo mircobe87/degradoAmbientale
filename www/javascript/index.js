@@ -302,17 +302,47 @@ app.loadRepo = function(e){
      /** avvio l'animazione di caricamento */
      app.startWaiting("Recupero Dettagli ...");
      /** ottengo i dati della segnalazione **/
-     georep.db.getDoc(app.query.docId, true, function(err, data){
-    	 if (err != undefined){
-    	     /** appena la chiamata ritorna termino l'animazione */
-    	     app.stopWaiting();
-    		 alert("Impossibile caricare la segnalazione: " + err);
+     /* provo a prendere la segnalazione dal database locale */
+     app.localRepo.get(app.query.docId, function(err, doc){
+    	 if(err){
+    		 //provo a leggere i dati dal server
+    		 georep.db.getDoc(app.query.docId, true, function(err, data){
+    	    	 if (err != undefined){
+    	    	     /** appena la chiamata ritorna termino l'animazione */
+    	    	     app.stopWaiting();
+    	    		 alert("Impossibile caricare la segnalazione: " + err);
+    	    	 }
+    	    	 else {
+    	    		 $("#descrizione").text(data.msg);
+    	    		 $("#repoDetail-title").text(data.title);
+    	    		 $("#repoImg").attr("src", "data:"+data._attachments.img.content_type+";base64,"+data._attachments.img.data);
+    	    		 app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
+    	    			 $("#indirizzo").text(indirizzo);
+    	    		 });
+    	    		 /* salvo la segnalazione letta nel database locale */
+    	    		 app.segnalazioneLocale._id = app.query.docId;
+    	    		 app.segnalazioneLocale.title = data.title;
+    	    		 app.segnalazioneLocale.msg = data.msg;
+    	    		 app.segnalazioneLocale.img.content_type = data._attachments.img.content_type;
+    	    		 app.segnalazioneLocale.img.data = data._attachments.img.data;
+    	    		 app.segnalazioneLocale.loc.latitude = data.loc.latitude;
+    	    		 app.segnalazioneLocale.loc.longitude = data.loc.longitude;
+    	    		 app.localRepo.put(app.segnalazioneLocale, function(err, response){
+    	    			 err ? console.log(err) : console.log(response);
+    	    		 });
+    	    	     /** appena la chiamata ritorna termino l'animazione */
+    	    	     app.stopWaiting();
+    	    	 }
+    	     });
     	 }
-    	 else {
-    		 $("#descrizione").text(data.msg);
-    		 $("#repoDetail-title").text(data.title);
-    		 $("#repoImg").attr("src", "data:"+data._attachments.img.content_type+";base64,"+data._attachments.img.data);
-    		 app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
+    	 else{
+    		 //setto il contenuto della view
+    		 console.log("doc locale");
+    		 console.log(doc);
+    		 $("#descrizione").text(doc.msg);
+    		 $("#repoDetail-title").text(doc.title);
+    		 $("#repoImg").attr("src", "data:"+doc.img.content_type+";base64,"+doc.img.data);
+    		 app.coordsToAddress(doc.loc.latitude, doc.loc.longitude, function(indirizzo){
     			 $("#indirizzo").text(indirizzo);
     		 });
     	     /** appena la chiamata ritorna termino l'animazione */
@@ -320,19 +350,38 @@ app.loadRepo = function(e){
     	 }
      });
      /** ottengo nick e mail di chi ha effettuato la segnalazione **/
-     georep.db.setDBName('_users');
-     //console.log("userId: " + app.query.userId);
-     georep.db.getDoc(app.query.userId, false, function(err, data){
-     	 if (err != undefined){
-     		 alert(err);
-     	 }
-     	 else {
-     		 console.log(data);
-     		 $("#nickName").text(data.nick);
-     		 $("#mail").text(data.mail);
-     	 }
-      });
-     georep.db.setDBName('testdb');
+     app.localUsers.get(app.query.userId, function(err, response){
+    	if (err){
+    		/* se non ci sono dati locali sull'utente provo a recuperarli dal server */
+    		 georep.db.setDBName('_users');
+	   	     georep.db.getDoc(app.query.userId, false, function(err, data){
+	   	     	 if (err != undefined){
+	   	     		 alert("Errore Server. Riprova più tardi");
+	   	     		 console.log(err);
+	   	     	 }
+	   	     	 else {
+	   	     		 /*console.log(data);*/
+	   	     		 $("#nickName").text(data.nick);
+	   	     		 $("#mail").text(data.mail);
+	   	     		 
+	   	     		 /* memorizzo in locale i dati dell'utente che ha effettuato la segnalazione */
+	   	     		 app.utenteRepoLocale._id = app.query.userId;
+	   	     		 app.utenteRepoLocale.nick = data.nick;
+	   	     		 app.utenteRepoLocale.mail = data.mail;
+	   	     		 app.localUsers.put(app.utenteRepoLocale, function(err, response){
+	   	     			err ? console.log(err) : console.log(response); 
+	   	     		 });
+	   	     	 }
+	   	      });
+	   	  georep.db.setDBName('testdb');
+    	} 
+    	else {
+    		console.log("local users");
+    		console.log(response);
+    		$("#nickName").text(response.nick);
+    		$("#mail").text(response.mail);
+    	}
+     });
 };
 
 /* funzione che ripulisce i campi della view all'uscita dalla view stessa */
@@ -357,6 +406,32 @@ app.segnalazione = {
 		longitude: ""
 	}
 };
+/* oggetto rappresentante una segnalazione memorizzata in locale */
+app.segnalazioneLocale = {
+	_id: "",
+	title: "",
+	msg: "",
+	img: {
+		content_type: "",
+		data: ""
+	},
+	loc: {
+		latitude: "",
+		longitude: ""
+	}
+};
+
+/* oggetto rappresentate nick e mail degli utenti le cui segnalazioni sono memorizzate in locale */
+app.utenteRepoLocale = {
+	_id: "",
+	nick: "",
+	mail: ""
+};
+/* database di segnalazioni memorizzate in locale (serve per il caching)*/
+app.localRepo = {};
+/* database contentente il nick e le mail degli utenti relativi alle segnalazioni memorizzate in locale (serve per il caching)*/
+app.localUsers = {};
+
 /** 
  * avvia l'app fotocamera per scattare la foto da segnalare, se non ci sono errori, l'anteprima della foto viene 
  * mostrata nella pagina di segnalazione.
@@ -389,6 +464,8 @@ app.getPhoto = function(){
 app.sendRepo = function (){
 	app.segnalazione.title = $("#titoloToRepo").val();
 	app.segnalazione.msg = $("#descrizioneToRepo").val();
+	/*app.segnalazione.img.data = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAlCAYAAAAjt+tHAAACtUlEQVRYhe2XT2sTQRiHn12ScVlLUkqJBmzJFxAriiBCT1vw6qfwCxSq4lkN9OzX8Cokp4IUpPXPNwjx0hQp3RDDZhJ2PWQmnZRkM5tuqQdfGGZ3szu/Z9/5TXZeJ0kSAHZ2dgqACwjVF8g3RkAMSCBuNBojACdJEi0uAE81oQDcnMRjBSCBSDXZaDRGThAEWtwHSqr3uJ4MREAf6Kpe6rf0lHilWaof5iw8FUF376k6jIGRmXq/WaofrtdqCN+n6HlzBzk5OUFKieM4JElCsVikWq2mCg+jCNnv02zVD4Pu3n3UNLhcGM8DFop3Oh2klHx9fYfhx3t8e3uX4XBIp9NJBSh6HsL39an2mavdrluqOICUkoPdCo9rt3Bdh60NwcFuBSll6nOXxp5oapdncvvWhkg9tww3s7COH79k6nlmiiwhhGB7/5Sj1oA4TjhqDdjeP0WIpbJgt9bDMCQMw6lrT95Pm24wGNButwEol8uUy+V8AV49L/HuxerCe998OufD59AawHoKbMSz3JcZYPLAy3am67kDzIo4TpZ+Nq+v3c0CuK5zswBXCetvvo3JljGiFcDm5ubkWP/ZLLrPNq40BcsuvdwA8oj/AP8MQHwD2rEGGBmNYRRdm6Ix9kSzwEW5FAHIfh9I35yay892KeptuYpIacZOEAQCWAFWSSlM1ms1bq+tWYn9OTvjd6s18zdVmJwC50BPZyBiXC6higazNHMBmq36F2AhhBYPunvP1CXtr8ulWQTENsXpZA/fLNWP0zJhiD9i2lvzi9MF5bnuzfLt+ywIQ/yheks9zybA7PI8LRSYx9gnKwripwlhiD9Q4j3VIi00LxYCzIFY0ZkAzDfvkUHcGmAGRElBHAN6znuMzWUtngngEoSvmi6HJOPU97OIZwYwILQp9VLVS0xmEQf4CxeGT7W/5EujAAAAAElFTkSuQmCC";
+	app.segnalazione.img.content_type = "image/png";*/
 	/*console.log(segnalazione.titolo);
 	console.log(segnalazione.descrizione);*/
 	if (!app.segnalazione.title || !app.segnalazione.msg || !app.segnalazione.img.data){
@@ -403,6 +480,7 @@ app.sendRepo = function (){
 					app.segnalazione.loc.longitude = position.coords.longitude;
 					/* invio della segnalazione al server */
 					console.log(app.segnalazione);
+					
 					/** avvio l'animazione di caricamento */
 					app.startWaiting("Invio Segnalazione ...");
 					georep.db.postDoc(app.segnalazione, function(err, data){
@@ -411,6 +489,11 @@ app.sendRepo = function (){
 						if(!err){
 							console.log(data);
 							alert("Segnalazione effettuata!");
+							app.segnalazioneLocale = app.segnalazione;
+							app.segnalazioneLocale._id = data.id;
+							app.localRepo.put(app.segnalazioneLocale, function(err, response){
+								err ? console.log(err) : console.log(response);								
+							})
 							app.clearRepo();
 							app.navigate(app.mainView);
 						}else{
@@ -728,7 +811,9 @@ app.bindEvents = function() {
  * In questo caso scatena il controllo dell'utente ed eventuale registrazione.
  */
 app.onDeviceReady = function() {
-    app.loader();
+    app.localRepo = new PouchDB("localRepo");
+    app.localUsers = new PouchDB("localUsers");
+	app.loader();
 };
 
 //----------------------- Animazione di Caricamento ----------------------------
@@ -832,6 +917,6 @@ app.getLastDataFromServer = function(){
 };
 
 //-------------------- per la simulazione nel browser --------------------------	
-//window.device = {uuid: "MiBe"};
+window.device = {uuid: "MiBe"};
 
 
