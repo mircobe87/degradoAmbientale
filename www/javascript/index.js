@@ -917,6 +917,6 @@ app.getLastDataFromServer = function(){
 };
 
 //-------------------- per la simulazione nel browser --------------------------	
-window.device = {uuid: "MiBe"};
+//window.device = {uuid: "MiBe"};
 
 
