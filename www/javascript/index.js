@@ -292,7 +292,7 @@ app.coordsToAddress = function (lat, lng, callback){
       if (status == google.maps.GeocoderStatus.OK) {
     	  callback(results[0].formatted_address);
       } else {
-        alert("Geocoder failed due to: " + status);
+        alert("Errore Server");
       }
     });
 }
@@ -305,12 +305,15 @@ app.loadRepo = function(e){
      /* provo a prendere la segnalazione dal database locale */
      app.localRepo.get(app.query.docId, function(err, doc){
     	 if(err){
+             console.log("Segnalazione con id: " + app.query.docId + " non presente in cache\nProvo a scaricare la segnalazione dal server");
     		 //provo a leggere i dati dal server
     		 georep.db.getDoc(app.query.docId, true, function(err, data){
     	    	 if (err != undefined){
     	    	     /** appena la chiamata ritorna termino l'animazione */
     	    	     app.stopWaiting();
-    	    		 alert("Impossibile caricare la segnalazione: " + err);
+    	    		 alert("Errore Server. Prova più tardi");
+                     console.log("***Errore Server***");
+                     console.log(err);
     	    	 }
     	    	 else {
     	    		 $("#descrizione").text(data.msg);
@@ -318,33 +321,41 @@ app.loadRepo = function(e){
     	    		 $("#repoImg").attr("src", "data:"+data._attachments.img.content_type+";base64,"+data._attachments.img.data);
     	    		 app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
     	    			 $("#indirizzo").text(indirizzo);
+    	    			 /* salvo la segnalazione letta nel database locale */
+    	    			 app.segnalazioneLocale.indirizzo = indirizzo;
+    	    			 app.segnalazioneLocale._id = app.query.docId;
+        	    		 app.segnalazioneLocale.title = data.title;
+        	    		 app.segnalazioneLocale.msg = data.msg;
+        	    		 app.segnalazioneLocale.img.content_type = data._attachments.img.content_type;
+        	    		 app.segnalazioneLocale.img.data = data._attachments.img.data;
+        	    		 
+        	    		 app.localRepo.put(app.segnalazioneLocale, function(err, response){
+                             console.log("Memorizzo in cache la segnalazione presa dal server: ");
+                             console.log(app.segnalazioneLocale);
+                             if (err){
+                                 console.log("Memorizzazione in cache non riuscita a causa dell'errore: ");
+                                 console.log(err);
+                             }
+        	    			 /*err ? console.log(err) : console.log(response);*/
+                             else{
+                                 console.log("Memorizzazione in cache riuscita. Risposta dal db locale: ");
+                                 console.log(response);
+                             }
+        	    		 });
+        	    		 /** appena la chiamata ritorna termino l'animazione */
+        	    	     app.stopWaiting();
     	    		 });
-    	    		 /* salvo la segnalazione letta nel database locale */
-    	    		 app.segnalazioneLocale._id = app.query.docId;
-    	    		 app.segnalazioneLocale.title = data.title;
-    	    		 app.segnalazioneLocale.msg = data.msg;
-    	    		 app.segnalazioneLocale.img.content_type = data._attachments.img.content_type;
-    	    		 app.segnalazioneLocale.img.data = data._attachments.img.data;
-    	    		 app.segnalazioneLocale.loc.latitude = data.loc.latitude;
-    	    		 app.segnalazioneLocale.loc.longitude = data.loc.longitude;
-    	    		 app.localRepo.put(app.segnalazioneLocale, function(err, response){
-    	    			 err ? console.log(err) : console.log(response);
-    	    		 });
-    	    	     /** appena la chiamata ritorna termino l'animazione */
-    	    	     app.stopWaiting();
     	    	 }
     	     });
     	 }
     	 else{
     		 //setto il contenuto della view
-    		 console.log("doc locale");
+    		 console.log("Segnalazione con id: " + app.query.docId + " presente in cache: ");
     		 console.log(doc);
     		 $("#descrizione").text(doc.msg);
     		 $("#repoDetail-title").text(doc.title);
     		 $("#repoImg").attr("src", "data:"+doc.img.content_type+";base64,"+doc.img.data);
-    		 app.coordsToAddress(doc.loc.latitude, doc.loc.longitude, function(indirizzo){
-    			 $("#indirizzo").text(indirizzo);
-    		 });
+    		 $("#indirizzo").text(doc.indirizzo);
     	     /** appena la chiamata ritorna termino l'animazione */
     	     app.stopWaiting();
     	 }
@@ -353,31 +364,43 @@ app.loadRepo = function(e){
      app.localUsers.get(app.query.userId, function(err, response){
     	if (err){
     		/* se non ci sono dati locali sull'utente provo a recuperarli dal server */
+            console.log("Dati sull'utente con id: " + app.query.userId + " non presenti in cache\nProvo a scaricarli dal server");
     		 georep.db.setDBName('_users');
 	   	     georep.db.getDoc(app.query.userId, false, function(err, data){
 	   	     	 if (err != undefined){
 	   	     		 alert("Errore Server. Riprova più tardi");
-	   	     		 console.log(err);
+                     console.log("***Errore Server***");
+                     console.log(err);
 	   	     	 }
 	   	     	 else {
 	   	     		 /*console.log(data);*/
 	   	     		 $("#nickName").text(data.nick);
 	   	     		 $("#mail").text(data.mail);
-	   	     		 
+
 	   	     		 /* memorizzo in locale i dati dell'utente che ha effettuato la segnalazione */
 	   	     		 app.utenteRepoLocale._id = app.query.userId;
 	   	     		 app.utenteRepoLocale.nick = data.nick;
 	   	     		 app.utenteRepoLocale.mail = data.mail;
 	   	     		 app.localUsers.put(app.utenteRepoLocale, function(err, response){
-	   	     			err ? console.log(err) : console.log(response); 
+                         console.log("Memorizzo in cache i dati dell'utente presi dal server: ");
+                         console.log(app.utenteRepoLocale);
+                         if (err){
+                             console.log("Memorizzazione in cache non riuscita a causa dell'errore: ");
+                             console.log(err);
+                         }
+                         /*err ? console.log(err) : console.log(response);*/
+                         else{
+                             console.log("Memorizzazione in cache riuscita. Risposta dal db locale: ");
+                             console.log(response);
+                         }
 	   	     		 });
 	   	     	 }
 	   	      });
 	   	  georep.db.setDBName('testdb');
     	} 
     	else {
-    		console.log("local users");
-    		console.log(response);
+            console.log("Dati dell'utente con id: " + app.query.userId + " presenti in cache: ");
+            console.log(response);;
     		$("#nickName").text(response.nick);
     		$("#mail").text(response.mail);
     	}
@@ -415,10 +438,7 @@ app.segnalazioneLocale = {
 		content_type: "",
 		data: ""
 	},
-	loc: {
-		latitude: "",
-		longitude: ""
-	}
+	indirizzo: ""
 };
 
 /* oggetto rappresentate nick e mail degli utenti le cui segnalazioni sono memorizzate in locale */
@@ -489,13 +509,27 @@ app.sendRepo = function (){
 						if(!err){
 							console.log(data);
 							alert("Segnalazione effettuata!");
+							/* salvo localmente la segnalazione */
 							app.segnalazioneLocale = app.segnalazione;
-							app.segnalazioneLocale._id = data.id;
-							app.localRepo.put(app.segnalazioneLocale, function(err, response){
-								err ? console.log(err) : console.log(response);								
-							})
-							app.clearRepo();
-							app.navigate(app.mainView);
+							app.coordsToAddress(app.segnalazione.loc.latitude, app.segnalazione.loc.longitude, function(indirizzo){
+		    	    			 app.segnalazioneLocale.indirizzo = indirizzo;
+		    	    			 app.segnalazioneLocale._id = data.id;
+									console.log("Segnalazione salvata in locale");
+									console.log(app.segnalazioneLocale);
+									app.localRepo.put(app.segnalazioneLocale, function(err, response){
+										err ? console.log(err) : console.log(response);								
+									});
+									
+									app.utenteRepoLocale._id = georep.user._id;
+									app.utenteRepoLocale.nick = georep.user.nick;
+									app.utenteRepoLocale.mail = georep.user.mail;
+									app.localUsers.put(app.utenteRepoLocale, function(err, response){
+										err ? console.log(err) : console.log(response);
+									});
+									
+									app.clearRepo();
+									app.navigate(app.mainView);
+							});
 						}else{
 							console.log(err);
 							alert("Invio segnalazione fallito!...Prova di nuovo");
