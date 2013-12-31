@@ -10,11 +10,22 @@
     <author email="support@phonegap.com" href="http://phonegap.com">
         Bertelli Mirco, Pratesi Maurizio
     </author>
-    
+    <!-- serve per usare weinre in locale
+    <feature name="debug-server" required="true">
+        <param name="domain" value="http://192.168.0.103:8080"/>
+        <param name="key" value="it.unipi.tirocinio.crossplatform.degradoAmbientale"/>
+    </feature>-->
+
     <feature name="http://api.phonegap.com/1.0/device" />
     <feature name="http://api.phonegap.com/1.0/geolocation"/>
     <feature name="http://api.phonegap.com/1.0/camera" />
 	<feature name="http://api.phonegap.com/1.0/file"/>
+    <feature name="NetworkStatus">
+        <param name="android-package" value="org.apache.cordova.NetworkManager" />
+    </feature>
+    <feature name="NetworkStatus">
+        <param name="ios-package" value="CDVConnection" />
+    </feature>
     <!--
     <preference name="permissions" value="none" />
     -->

@@ -27,6 +27,22 @@ var app = new kendo.mobile.Application($(document).body,{
 	}
 });
 
+// controlla lo stato di connessione del dispositivo
+app.checkConnection = function () {
+    var networkState = navigator.connection.type;
+
+    var states = {};
+    states[Connection.UNKNOWN]  = true;
+    states[Connection.ETHERNET] = true;
+    states[Connection.WIFI]     = true;
+    states[Connection.CELL_2G]  = true;
+    states[Connection.CELL_3G]  = true;
+    states[Connection.CELL_4G]  = true;
+    states[Connection.CELL]     = true;
+    states[Connection.NONE]     = false;
+
+    return states[networkState];
+};
 // ------- sezione MAPPA -------------------------------------------------------
 
 /**
@@ -269,19 +285,48 @@ app.createViewList = function (){
 /* prende i titoli, di tutte le segnalazioni effettuate dall'utente, dal server couchdb. 
  * Poi li inserisce nella listView */
 app.getDataFromServer = function(){
-	georep.db.setDBName(georep.db.name);
-	georep.db.getUserDocs(georep.user._id, function(err, data){
-		if (err != undefined){
-			alert("Impossibile caricare i dati dal server");
-		}
-		else{
-			/* inserisce i dati contenuti in data.rows nella listView.
-			 * data.rows è il vettore restituito dalla getUserDocs in caso di successo.
-			 * Ogni elemento del vettore è del tipo {id: ..., key: ..., value: ...}
-			 */
-			app.customerDataSource.data(data.rows);
-		}
-	});
+    app.startWaiting();
+	/* questo if serve per provare l'app in modalità non connessa sul browser */
+	/*if (app.nonConnesso == true){
+        if(localStorage.getItem("lastRepo") != null)
+            app.lastRepDataSource.data(JSON.parse(localStorage.getItem("myRepo")));
+        else
+            app.lastRepDataSource.data([]);
+         console.log(app.customerDataSource);
+         console.log("Non c'è connessione di rete.");
+	}*/
+    /* se non c'è connessione di rete si prende la lista locale delle segnalazioni */
+    if (app.checkConnection() == false){
+     if(localStorage.getItem("myRepo") != null)
+        app.customerDataSource.data(JSON.parse(localStorage.getItem("myRepo")));
+     else
+         app.customerDataSource.data([]);
+        console.log(app.customerDataSource);
+        console.log("Non c'è connessione di rete.");
+    }
+    /* se c'è connessione di rete si prende la lista delle segnalazioni da remoto e poi si aggiorna quella locale */
+	else {
+        console.log("c'è connessione di rete");
+		georep.db.setDBName(georep.db.name);
+		georep.db.getUserDocs(georep.user._id, function(err, data){
+			if (err != undefined){
+				alert("Impossibile caricare i dati dal server");
+			}
+			else{
+				/* inserisce i dati contenuti in data.rows nella listView.
+				 * data.rows è il vettore restituito dalla getUserDocs in caso di successo.
+				 * Ogni elemento del vettore è del tipo {id: ..., key: ..., value: ...}
+				 */
+				app.customerDataSource.data(data.rows);
+                console.log("DATA ROWS");
+                console.log(data.rows);
+                localStorage.setItem("myRepo", JSON.stringify(data.rows));
+                console.log("Dati salvati nel localStorage");
+                console.log(localStorage.myRepo);
+			}
+		});
+	}
+    app.stopWaiting();
 };
 
 /* permette di ottenere un indirizzo a partite da una latitudine e una longitudine */
@@ -512,23 +557,22 @@ app.sendRepo = function (){
 							/* salvo localmente la segnalazione */
 							app.segnalazioneLocale = app.segnalazione;
 							app.coordsToAddress(app.segnalazione.loc.latitude, app.segnalazione.loc.longitude, function(indirizzo){
-		    	    			 app.segnalazioneLocale.indirizzo = indirizzo;
-		    	    			 app.segnalazioneLocale._id = data.id;
-									console.log("Segnalazione salvata in locale");
-									console.log(app.segnalazioneLocale);
-									app.localRepo.put(app.segnalazioneLocale, function(err, response){
-										err ? console.log(err) : console.log(response);								
-									});
-									
-									app.utenteRepoLocale._id = georep.user._id;
-									app.utenteRepoLocale.nick = georep.user.nick;
-									app.utenteRepoLocale.mail = georep.user.mail;
-									app.localUsers.put(app.utenteRepoLocale, function(err, response){
-										err ? console.log(err) : console.log(response);
-									});
-									
-									app.clearRepo();
-									app.navigate(app.mainView);
+		    	    			app.segnalazioneLocale.indirizzo = indirizzo;
+		    	    			app.segnalazioneLocale._id = data.id;
+
+                                app.localRepo.put(app.segnalazioneLocale, function(err, response){
+                                       err ? console.log(err) : console.log(response);
+                                });
+
+                                app.utenteRepoLocale._id = georep.user._id;
+                                app.utenteRepoLocale.nick = georep.user.nick;
+                                app.utenteRepoLocale.mail = georep.user.mail;
+                                app.localUsers.put(app.utenteRepoLocale, function(err, response){
+                                    err ? console.log(err) : console.log(response);
+                                });
+
+                                app.clearRepo();
+                                app.navigate(app.mainView);
 							});
 						}else{
 							console.log(err);
@@ -847,6 +891,8 @@ app.bindEvents = function() {
 app.onDeviceReady = function() {
     app.localRepo = new PouchDB("localRepo");
     app.localUsers = new PouchDB("localUsers");
+    /* se non ho dati in cache inizializzo ad un vettore vuoto la lista delle mie segnalazioni locali */
+    /*if (!localStorage.myRepo) localStorage.myRepo = [];*/
 	app.loader();
 };
 
@@ -937,20 +983,50 @@ app.createLastListView = function (){
 
 /* Prende le utlime segnalazioni inviate al server e le passa alla listView */
 app.getLastDataFromServer = function(){
-	georep.db.getLastDocs(10, function(err, data){
-		if (err != undefined){
-			alert("Impossibile caricare i dati dal server");
-		}
-		else{
-			// inserisce i dati contenuti in data.rows nella listView.
-			// data.rows è il vettore restituito dalla getLastDocs in caso di successo.
-			// Ogni elemento del vettore è del tipo {id: ..., key: ..., value: ...}
-			app.lastRepDataSource.data(data.rows);
-		}
-	});
+    app.startWaiting();
+
+    /* questo if server per testare l'app sul browser, in quanto non esiste connection.type come su phonegap */
+    /*if (app.nonConnesso == true){
+        console.log("non c'è connessione");
+         if(localStorage.getItem("lastRepo") != null)
+         app.lastRepDataSource.data(JSON.parse(localStorage.getItem("lastRepo")));
+         else
+         app.lastRepDataSource.data([]);
+    }*/
+    /* se non c'è connessione uso la lista locale delle ultime segnalazioni */
+    if (app.checkConnection() == false){
+        console.log("non c'è connessione");
+        if(localStorage.getItem("lastRepo") != null)
+            app.lastRepDataSource.data(JSON.parse(localStorage.getItem("lastRepo")));
+        else
+            app.lastRepDataSource.data([]);
+    }
+    /* se c'è connessione scarico la lista delle ultime segnalazioni dal server */
+    else{
+        georep.db.getLastDocs(10, function(err, data){
+            if (err != undefined){
+                alert("Impossibile caricare i dati dal server");
+                app.stopWaiting();
+            }
+            else{
+                // inserisce i dati contenuti in data.rows nella listView.
+                // data.rows è il vettore restituito dalla getLastDocs in caso di successo.
+                // Ogni elemento del vettore è del tipo {id: ..., key: ..., value: ...}
+                app.lastRepDataSource.data(data.rows);
+                localStorage.setItem("lastRepo", JSON.stringify(data.rows));
+                app.stopWaiting();
+            }
+        });
+    }
+
 };
 
 //-------------------- per la simulazione nel browser --------------------------	
 //window.device = {uuid: "MiBe"};
 
-
+//funzione da chiamare nella console del browser per inizializzare l'app
+app.initBrowser = function (uuid){
+    window.device = {};
+    window.device.uuid = uuid;
+    app.onDeviceReady();
+}
