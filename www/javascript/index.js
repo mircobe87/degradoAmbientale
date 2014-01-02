@@ -571,6 +571,36 @@ app.sendRepo = function (){
                                     err ? console.log(err) : console.log(response);
                                 });
 
+                                /* aggiorno la lista locale delle mie segnalazioni e delle ultime segnalazioni
+                                 * in modo che se la connessione alla rete internet non è più disponibile dopo che
+                                 * la segnalazione è stata consegnata al server, nelle liste questa compaia comunque.
+                                 */
+                                var tmpVet = localStorage.getItem(app.MYREPOLIST);
+                                var parsTmpVet = JSON.parse(tmpVet);
+                                parsTmpVet.unshift(
+                                    {
+                                        id: data.id,
+                                        key: app.utenteRepoLocale._id,
+                                        value: app.segnalazioneLocale.title
+                                    }
+                                );
+                                var jsonTmpVet = JSON.stringify(parsTmpVet);
+                                localStorage.setItem(app.MYREPOLIST, jsonTmpVet);
+
+                                /*tmpVet = localStorage.getItem(app.LASTREPOLIST);
+                                jsonTmpVet = JSON.stringify(JSON.parse(tmpVet).unshift(
+                                    {
+                                        id: data.id,
+                                        //key:  data segnalazione
+                                        value: {
+                                            _id: data.id,
+                                            userId: app.utenteRepoLocale._id,
+                                            title: app.segnalazioneLocale.title
+                                        }
+                                    }
+                                ));
+                                localStorage.setItem(app.LASTREPOLIST, jsonTmpVet);*/
+
                                 app.clearRepo();
                                 app.navigate(app.mainView);
 							});
