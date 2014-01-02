@@ -406,50 +406,50 @@ app.loadRepo = function(e){
     	 }
      });
      /** ottengo nick e mail di chi ha effettuato la segnalazione **/
-     app.localUsers.get(app.query.userId, function(err, response){
-    	if (err){
-    		/* se non ci sono dati locali sull'utente provo a recuperarli dal server */
-            console.log("Dati sull'utente con id: " + app.query.userId + " non presenti in cache\nProvo a scaricarli dal server");
-    		 georep.db.setDBName('_users');
-	   	     georep.db.getDoc(app.query.userId, false, function(err, data){
-	   	     	 if (err != undefined){
-	   	     		 alert("Errore Server. Riprova più tardi");
-                     console.log("***Errore Server***");
-                     console.log(err);
-	   	     	 }
-	   	     	 else {
-	   	     		 /*console.log(data);*/
-	   	     		 $("#nickName").text(data.nick);
-	   	     		 $("#mail").text(data.mail);
+     georep.db.setDBName('_users');
+     georep.db.getDoc(app.query.userId, false, function(err, data){
+        if (err != undefined){
+            app.localUsers.get(app.query.userId, function(err, response){
+                if (err){
+                    /* se non ci sono dati locali sull'utente provo a recuperarli dal server */
+                    console.log("Dati sull'utente con id: " + app.query.userId + " impossibile recuperarli dal server e non presenti in cache");
+                    alert("Dati del segnalatore non disponibili. Prova più tardi");
+                }
+                else {
+                    console.log("Dati dell'utente con id: " + app.query.userId + " presenti in cache: ");
+                    console.log(response);;
+                    $("#nickName").text(response.nick);
+                    $("#mail").text(response.mail);
+                }
+            });
+            console.log("messaggio di errore del server: ");
+            console.log(err);
+        }
+        else {
+            /*console.log(data);*/
+            $("#nickName").text(data.nick);
+            $("#mail").text(data.mail);
 
-	   	     		 /* memorizzo in locale i dati dell'utente che ha effettuato la segnalazione */
-	   	     		 app.utenteRepoLocale._id = app.query.userId;
-	   	     		 app.utenteRepoLocale.nick = data.nick;
-	   	     		 app.utenteRepoLocale.mail = data.mail;
-	   	     		 app.localUsers.put(app.utenteRepoLocale, function(err, response){
-                         console.log("Memorizzo in cache i dati dell'utente presi dal server: ");
-                         console.log(app.utenteRepoLocale);
-                         if (err){
-                             console.log("Memorizzazione in cache non riuscita a causa dell'errore: ");
-                             console.log(err);
-                         }
-                         /*err ? console.log(err) : console.log(response);*/
-                         else{
-                             console.log("Memorizzazione in cache riuscita. Risposta dal db locale: ");
-                             console.log(response);
-                         }
-	   	     		 });
-	   	     	 }
-	   	      });
-	   	  georep.db.setDBName('testdb');
-    	} 
-    	else {
-            console.log("Dati dell'utente con id: " + app.query.userId + " presenti in cache: ");
-            console.log(response);;
-    		$("#nickName").text(response.nick);
-    		$("#mail").text(response.mail);
-    	}
+            /* memorizzo in locale i dati dell'utente che ha effettuato la segnalazione */
+            app.utenteRepoLocale._id = app.query.userId;
+            app.utenteRepoLocale.nick = data.nick;
+            app.utenteRepoLocale.mail = data.mail;
+            app.localUsers.put(app.utenteRepoLocale, function(err, response){
+                console.log("Memorizzo in cache i dati dell'utente presi dal server: ");
+                console.log(app.utenteRepoLocale);
+                if (err){
+                    console.log("Memorizzazione in cache non riuscita a causa dell'errore: ");
+                    console.log(err);
+                }
+                /*err ? console.log(err) : console.log(response);*/
+                else{
+                    console.log("Memorizzazione in cache riuscita. Risposta dal db locale: ");
+                    console.log(response);
+                }
+            });
+        }
      });
+     georep.db.setDBName('testdb');
 };
 
 /* funzione che ripulisce i campi della view all'uscita dalla view stessa */
