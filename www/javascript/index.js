@@ -288,8 +288,8 @@ app.getDataFromServer = function(){
     app.startWaiting();
 	/* questo if serve per provare l'app in modalità non connessa sul browser */
 	/*if (app.nonConnesso == true){
-        if(localStorage.getItem("lastRepo") != null)
-            app.lastRepDataSource.data(JSON.parse(localStorage.getItem("myRepo")));
+        if(localStorage.getItem(app.MYREPOLIST) != null)
+            app.lastRepDataSource.data(JSON.parse(localStorage.getItem(app.MYREPOLIST)));
         else
             app.lastRepDataSource.data([]);
          console.log(app.customerDataSource);
@@ -297,8 +297,8 @@ app.getDataFromServer = function(){
 	}*/
     /* se non c'è connessione di rete si prende la lista locale delle segnalazioni */
     if (app.checkConnection() == false){
-     if(localStorage.getItem("myRepo") != null)
-        app.customerDataSource.data(JSON.parse(localStorage.getItem("myRepo")));
+     if(localStorage.getItem(app.MYREPOLIST) != null)
+        app.customerDataSource.data(JSON.parse(localStorage.getItem(app.MYREPOLIST)));
      else
          app.customerDataSource.data([]);
         console.log(app.customerDataSource);
@@ -320,9 +320,9 @@ app.getDataFromServer = function(){
 				app.customerDataSource.data(data.rows);
                 console.log("DATA ROWS");
                 console.log(data.rows);
-                localStorage.setItem("myRepo", JSON.stringify(data.rows));
+                localStorage.setItem(app.MYREPOLIST, JSON.stringify(data.rows));
                 console.log("Dati salvati nel localStorage");
-                console.log(localStorage.myRepo);
+                console.log(localStorage.getItem(app.MYREPOLIST));
 			}
 		});
 	}
@@ -618,6 +618,16 @@ app.FAKE_MAIL = '-:RkFLRV9NQUlM:-';
 app.FAKE_NICK = '-:RkFLRV9OSUNL:-';
 
 /**
+ * Costante che rappresenta la chiave usata nel localStorage per salvare localmente la lista delle segnalazioni fatte dall'utente stesso dell'app
+ */
+app.MYREPOLIST = "myRepo";
+/**
+ * Costante che rappresenta la chiave usata nel localStorage per salvare localmente la lista delle ultime segnalazioni effettuate
+ * con l'applicazione (anche da altri utenti)
+ */
+app.LASTREPOLIST = "lastRepo";
+
+/**
  * ID della view da mostrare all'avvio
  */
 app.mainView = '#last-view';
@@ -891,8 +901,6 @@ app.bindEvents = function() {
 app.onDeviceReady = function() {
     app.localRepo = new PouchDB("localRepo");
     app.localUsers = new PouchDB("localUsers");
-    /* se non ho dati in cache inizializzo ad un vettore vuoto la lista delle mie segnalazioni locali */
-    /*if (!localStorage.myRepo) localStorage.myRepo = [];*/
 	app.loader();
 };
 
@@ -988,16 +996,16 @@ app.getLastDataFromServer = function(){
     /* questo if server per testare l'app sul browser, in quanto non esiste connection.type come su phonegap */
     /*if (app.nonConnesso == true){
         console.log("non c'è connessione");
-         if(localStorage.getItem("lastRepo") != null)
-         app.lastRepDataSource.data(JSON.parse(localStorage.getItem("lastRepo")));
+         if(localStorage.getItem(app.LASTREPOLIST) != null)
+         app.lastRepDataSource.data(JSON.parse(localStorage.getItem(app.LASTREPOLIST)));
          else
          app.lastRepDataSource.data([]);
     }*/
     /* se non c'è connessione uso la lista locale delle ultime segnalazioni */
     if (app.checkConnection() == false){
         console.log("non c'è connessione");
-        if(localStorage.getItem("lastRepo") != null)
-            app.lastRepDataSource.data(JSON.parse(localStorage.getItem("lastRepo")));
+        if(localStorage.getItem(app.LASTREPOLIST) != null)
+            app.lastRepDataSource.data(JSON.parse(localStorage.getItem(app.LASTREPOLIST)));
         else
             app.lastRepDataSource.data([]);
     }
@@ -1013,7 +1021,7 @@ app.getLastDataFromServer = function(){
                 // data.rows è il vettore restituito dalla getLastDocs in caso di successo.
                 // Ogni elemento del vettore è del tipo {id: ..., key: ..., value: ...}
                 app.lastRepDataSource.data(data.rows);
-                localStorage.setItem("lastRepo", JSON.stringify(data.rows));
+                localStorage.setItem(app.LASTREPOLIST, JSON.stringify(data.rows));
                 app.stopWaiting();
             }
         });
