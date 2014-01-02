@@ -364,6 +364,7 @@ app.loadRepo = function(e){
     	    		 $("#descrizione").text(data.msg);
     	    		 $("#repoDetail-title").text(data.title);
     	    		 $("#repoImg").attr("src", "data:"+data._attachments.img.content_type+";base64,"+data._attachments.img.data);
+                     $("#data").text(app.dateToString(data.date));
     	    		 app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
     	    			 $("#indirizzo").text(indirizzo);
     	    			 /* salvo la segnalazione letta nel database locale */
@@ -373,7 +374,7 @@ app.loadRepo = function(e){
         	    		 app.segnalazioneLocale.msg = data.msg;
         	    		 app.segnalazioneLocale.img.content_type = data._attachments.img.content_type;
         	    		 app.segnalazioneLocale.img.data = data._attachments.img.data;
-        	    		 
+        	    		 app.segnalazioneLocale.data = data.date;
         	    		 app.localRepo.put(app.segnalazioneLocale, function(err, response){
                              console.log("Memorizzo in cache la segnalazione presa dal server: ");
                              console.log(app.segnalazioneLocale);
@@ -401,6 +402,7 @@ app.loadRepo = function(e){
     		 $("#repoDetail-title").text(doc.title);
     		 $("#repoImg").attr("src", "data:"+doc.img.content_type+";base64,"+doc.img.data);
     		 $("#indirizzo").text(doc.indirizzo);
+             $("#data").text(app.dateToString(doc.data));
     	     /** appena la chiamata ritorna termino l'animazione */
     	     app.stopWaiting();
     	 }
@@ -454,12 +456,13 @@ app.loadRepo = function(e){
 
 /* funzione che ripulisce i campi della view all'uscita dalla view stessa */
 app.hideRepo = function(){
-	 $("#nickName").text("");
-	 $("#mail").text("");
-	 $("#descrizione").text("");
-	 $("#repoDetail-title").text("");
-	 $("#indirizzo").text("");
-	 $("#repoImg").attr("src", "img/placeholder.png");
+	$("#nickName").text("");
+	$("#mail").text("");
+	$("#descrizione").text("");
+	$("#repoDetail-title").text("");
+	$("#indirizzo").text("");
+	$("#repoImg").attr("src", "img/placeholder.png");
+    $("#data").text("");
 };
 /*-------------------------Sezione vista segnalazione ------------------------*/
 app.segnalazione = {
@@ -483,6 +486,7 @@ app.segnalazioneLocale = {
 		content_type: "",
 		data: ""
 	},
+    data: "",
 	indirizzo: ""
 };
 
@@ -553,13 +557,12 @@ app.sendRepo = function (){
 						app.stopWaiting();
 						if(!err){
 							console.log(data);
-							alert("Segnalazione effettuata!");
 							/* salvo localmente la segnalazione */
 							app.segnalazioneLocale = app.segnalazione;
 							app.coordsToAddress(app.segnalazione.loc.latitude, app.segnalazione.loc.longitude, function(indirizzo){
 		    	    			app.segnalazioneLocale.indirizzo = indirizzo;
 		    	    			app.segnalazioneLocale._id = data.id;
-
+                                app.segnalazioneLocale.data = (new Date()).getTime();
                                 app.localRepo.put(app.segnalazioneLocale, function(err, response){
                                        err ? console.log(err) : console.log(response);
                                 });
@@ -587,20 +590,22 @@ app.sendRepo = function (){
                                 var jsonTmpVet = JSON.stringify(parsTmpVet);
                                 localStorage.setItem(app.MYREPOLIST, jsonTmpVet);
 
-                                /*tmpVet = localStorage.getItem(app.LASTREPOLIST);
-                                jsonTmpVet = JSON.stringify(JSON.parse(tmpVet).unshift(
+                                tmpVet = localStorage.getItem(app.LASTREPOLIST);
+                                parsTmpVet = JSON.parse(tmpVet);
+                                parsTmpVet.unshift(
                                     {
                                         id: data.id,
-                                        //key:  data segnalazione
+                                        key: (new Date()).getTime(),
                                         value: {
                                             _id: data.id,
                                             userId: app.utenteRepoLocale._id,
                                             title: app.segnalazioneLocale.title
                                         }
                                     }
-                                ));
-                                localStorage.setItem(app.LASTREPOLIST, jsonTmpVet);*/
-
+                                );
+                                jsonTmpVet = JSON.stringify(parsTmpVet);
+                                localStorage.setItem(app.LASTREPOLIST, jsonTmpVet);
+                                alert("Segnalazione effettuata!");
                                 app.clearRepo();
                                 app.navigate(app.mainView);
 							});
@@ -1066,5 +1071,10 @@ app.getLastDataFromServer = function(){
 app.initBrowser = function (uuid){
     window.device = {};
     window.device.uuid = uuid;
+    navigator.connection = {};
+    Connection = {};
+    Connection.ETHERNET = 1;
+    Connection.NONE = 0;
+    navigator.connection.type = Connection.ETHERNET
     app.onDeviceReady();
 }
