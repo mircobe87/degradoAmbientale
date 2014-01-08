@@ -22,8 +22,8 @@
  * all'inizializzazione naviga alla view delle impostazioni dell'utente
  */
 var app = new kendo.mobile.Application($(document).body,{
-	init: function(){
-		app.navigate('#user-view');
+    init: function () {
+	    app.navigate('#user-view');
 	}
 });
 
@@ -926,7 +926,7 @@ app.initialize = function() {
  * disponibili
  */
 app.bindEvents = function() {
-    document.addEventListener('deviceready', this.onDeviceReady, false);
+    document.addEventListener('deviceready', app.onDeviceReady, false);
 };
 
 /**
@@ -934,11 +934,16 @@ app.bindEvents = function() {
  * In questo caso scatena il controllo dell'utente ed eventuale registrazione.
  */
 app.onDeviceReady = function() {
+    /* disabilita il funzionamento del tasto back su android, dato che è inutile in questo tipo di app */
+    document.addEventListener("backbutton", app.back, false);
     app.localRepo = new PouchDB("localRepo");
     app.localUsers = new PouchDB("localUsers");
 	app.loader();
 };
 
+app.back = function () {
+    console.log("premuto il tasto back");
+};
 //----------------------- Animazione di Caricamento ----------------------------
 
 /**
