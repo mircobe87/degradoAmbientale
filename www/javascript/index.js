@@ -166,7 +166,7 @@ app.setUpMarkerClick = function(marker){
 		//console.log("docId: " + marker.docId);
 		//console.log("userId: " + marker.userId);
 		app.navigate('#view-repoDetail');
-	}
+	};
 	/** setta lo handler per l'evento */
 	google.maps.event.addListener(marker, 'click', onClickHandler);
 };
@@ -233,7 +233,7 @@ app.updateMap = function(){
 						data.rows[i].geometry.coordinates[0] 
 					),
 					icon: (data.rows[i].value == georep.user._id) ? app.MYDOCS_MARKER : app.OTHERDOCS_MARKER 
-				}
+				};
 				//console.log("marker[" + i + "]: ");
 				//console.log(markerOpt);
 				/** metto il nuovo marker nel vettore */
@@ -340,7 +340,7 @@ app.coordsToAddress = function (lat, lng, callback){
         alert("Errore Server");
       }
     });
-}
+};
 /* carica la segnalazione completa */
 app.loadRepo = function(e){
      georep.db.setDBName('testdb');
@@ -1080,6 +1080,6 @@ app.initBrowser = function (uuid){
     Connection = {};
     Connection.ETHERNET = 1;
     Connection.NONE = 0;
-    navigator.connection.type = Connection.ETHERNET
+    navigator.connection.type = Connection.ETHERNET;
     app.onDeviceReady();
-}
+};
