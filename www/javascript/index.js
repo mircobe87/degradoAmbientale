@@ -348,87 +348,78 @@ app.loadRepo = function(e){
      app.startWaiting("Recupero Dettagli ...");
      /** ottengo i dati della segnalazione **/
      /* provo a prendere la segnalazione dal database locale */
-     app.localRepo.get(app.query.docId, function(err, doc){
-    	 if(err){
-             console.log("Segnalazione con id: " + app.query.docId + " non presente in cache\nProvo a scaricare la segnalazione dal server");
-    		 //provo a leggere i dati dal server
-    		 georep.db.getDoc(app.query.docId, true, function(err, data){
-    	    	 if (err != undefined){
-    	    	     /** appena la chiamata ritorna termino l'animazione */
+     var repo = localStorage.getItem(app.query.docId);
+     
+     if (repo == null){
+     	// segnalazione non presente in locale
+     	console.log("Segnalazione con id: " + app.query.docId + " non presente in cache\nProvo a scaricare la segnalazione dal server");
+		 //provo a leggere i dati dal server
+		 georep.db.getDoc(app.query.docId, true, function(err, data){
+	    	 if (err != undefined){
+
+	    		 alert("Errore Server. Prova più tardi");
+                 console.log("***Errore Server***");
+                 console.log(err);
+	    	 }
+	    	 else {
+	    		 $("#descrizione").text(data.msg);
+	    		 $("#repoDetail-title").text(data.title);
+	    		 $("#repoImg").attr("src", "data:"+data._attachments.img.content_type+";base64,"+data._attachments.img.data);
+                 $("#data").text(app.dateToString(data.date));
+	    		 app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
+	    			 $("#indirizzo").text(indirizzo);
+	    			 /* salvo la segnalazione letta nel database locale */
+	    			 app.segnalazioneLocale.indirizzo = indirizzo;
+	    			 app.segnalazioneLocale._id = app.query.docId;
+    	    		 app.segnalazioneLocale.title = data.title;
+    	    		 app.segnalazioneLocale.msg = data.msg;
+    	    		 app.segnalazioneLocale.img.content_type = data._attachments.img.content_type;
+    	    		 app.segnalazioneLocale.img.data = data._attachments.img.data;
+    	    		 app.segnalazioneLocale.data = data.date;
+    	    		 localStorage.setItem(app.segnalazioneLocale._id, JSON.stringify(app.segnalazioneLocale));
+    	    		 /** appena la chiamata ritorna termino l'animazione */
     	    	     app.stopWaiting();
-    	    		 alert("Errore Server. Prova più tardi");
-                     console.log("***Errore Server***");
-                     console.log(err);
-    	    	 }
-    	    	 else {
-    	    		 $("#descrizione").text(data.msg);
-    	    		 $("#repoDetail-title").text(data.title);
-    	    		 $("#repoImg").attr("src", "data:"+data._attachments.img.content_type+";base64,"+data._attachments.img.data);
-                     $("#data").text(app.dateToString(data.date));
-    	    		 app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
-    	    			 $("#indirizzo").text(indirizzo);
-    	    			 /* salvo la segnalazione letta nel database locale */
-    	    			 app.segnalazioneLocale.indirizzo = indirizzo;
-    	    			 app.segnalazioneLocale._id = app.query.docId;
-        	    		 app.segnalazioneLocale.title = data.title;
-        	    		 app.segnalazioneLocale.msg = data.msg;
-        	    		 app.segnalazioneLocale.img.content_type = data._attachments.img.content_type;
-        	    		 app.segnalazioneLocale.img.data = data._attachments.img.data;
-        	    		 app.segnalazioneLocale.data = data.date;
-        	    		 app.localRepo.put(app.segnalazioneLocale, function(err, response){
-                             console.log("Memorizzo in cache la segnalazione presa dal server: ");
-                             console.log(app.segnalazioneLocale);
-                             if (err){
-                                 console.log("Memorizzazione in cache non riuscita a causa dell'errore: ");
-                                 console.log(err);
-                             }
-        	    			 /*err ? console.log(err) : console.log(response);*/
-                             else{
-                                 console.log("Memorizzazione in cache riuscita. Risposta dal db locale: ");
-                                 console.log(response);
-                             }
-        	    		 });
-        	    		 /** appena la chiamata ritorna termino l'animazione */
-        	    	     app.stopWaiting();
-    	    		 });
-    	    	 }
-    	     });
-    	 }
-    	 else{
-    		 //setto il contenuto della view
-    		 console.log("Segnalazione con id: " + app.query.docId + " presente in cache: ");
-    		 console.log(doc);
-    		 $("#descrizione").text(doc.msg);
-    		 $("#repoDetail-title").text(doc.title);
-    		 $("#repoImg").attr("src", "data:"+doc.img.content_type+";base64,"+doc.img.data);
-    		 $("#indirizzo").text(doc.indirizzo);
-             $("#data").text(app.dateToString(doc.data));
-    	     /** appena la chiamata ritorna termino l'animazione */
-    	     app.stopWaiting();
-    	 }
-     });
+    	    	}); 
+    	    }
+	    });
+     }
+     else {
+     	// segnalazione presente in cache
+     	var jsonRepo = JSON.parse(repo);
+     	
+     	//setto il contenuto della view
+		console.log("Segnalazione con id: " + app.query.docId + " presente in cache: ");
+		console.log(jsonRepo);
+		$("#descrizione").text(jsonRepo.msg);
+		$("#repoDetail-title").text(jsonRepo.title);
+		$("#repoImg").attr("src", "data:"+jsonRepo.img.content_type+";base64,"+jsonRepo.img.data);
+		$("#indirizzo").text(jsonRepo.indirizzo);
+		$("#data").text(app.dateToString(jsonRepo.data));
+
+     }
+    
      /** ottengo nick e mail di chi ha effettuato la segnalazione **/
      georep.db.setDBName('_users');
      georep.db.getDoc(app.query.userId, false, function(err, data){
         if (err != undefined){
-            app.localUsers.get(app.query.userId, function(err, response){
-                if (err){
-                    /* se non ci sono dati locali sull'utente provo a recuperarli dal server */
-                    console.log("Dati sull'utente con id: " + app.query.userId + " impossibile recuperarli dal server e non presenti in cache");
-                    alert("Dati del segnalatore non disponibili. Prova più tardi");
-                }
-                else {
-                    console.log("Dati dell'utente con id: " + app.query.userId + " presenti in cache: ");
-                    console.log(response);;
-                    $("#nickName").text(response.nick);
-                    $("#mail").text(response.mail);
-                }
-            });
+        	var user = localStorage.getItem(app.query.userId);
+        	
+        	if (user == null){
+        		console.log("Dati sull'utente con id: " + app.query.userId + " impossibile recuperarli dal server e non presenti in cache");
+                alert("Dati del segnalatore non disponibili. Prova più tardi");
+        	}
+        	else{
+        		console.log("Dati segnalatore disponibili in locale: \n" + user);
+        		var jsonUser = JSON.parse(user);
+                $("#nickName").text(jsonUser.nick);
+                $("#mail").text(jsonUser.mail);
+        	}
+
             console.log("messaggio di errore del server: ");
             console.log(err);
         }
         else {
-            /*console.log(data);*/
+            console.log("Dati segnalatore recuperati dal server: \n" + JSON.stringify(data));
             $("#nickName").text(data.nick);
             $("#mail").text(data.mail);
 
@@ -436,21 +427,12 @@ app.loadRepo = function(e){
             app.utenteRepoLocale._id = app.query.userId;
             app.utenteRepoLocale.nick = data.nick;
             app.utenteRepoLocale.mail = data.mail;
-            app.localUsers.put(app.utenteRepoLocale, function(err, response){
-                console.log("Memorizzo in cache i dati dell'utente presi dal server: ");
-                console.log(app.utenteRepoLocale);
-                if (err){
-                    console.log("Memorizzazione in cache non riuscita a causa dell'errore: ");
-                    console.log(err);
-                }
-                /*err ? console.log(err) : console.log(response);*/
-                else{
-                    console.log("Memorizzazione in cache riuscita. Risposta dal db locale: ");
-                    console.log(response);
-                }
-            });
+            localStorage.setItem(app.query.userId, JSON.stringify(app.utenteRepoLocale));
+            console.log("Dati segnalatore salvati in locale: \n" + localStorage.getItem(app.query.userId));
         }
      });
+     // appena la chiamata ritorna termino l'animazione 
+	 app.stopWaiting();
      georep.db.setDBName('testdb');
 };
 
@@ -496,10 +478,6 @@ app.utenteRepoLocale = {
 	nick: "",
 	mail: ""
 };
-/* database di segnalazioni memorizzate in locale (serve per il caching)*/
-app.localRepo = {};
-/* database contentente il nick e le mail degli utenti relativi alle segnalazioni memorizzate in locale (serve per il caching)*/
-app.localUsers = {};
 
 /** 
  * avvia l'app fotocamera per scattare la foto da segnalare, se non ci sono errori, l'anteprima della foto viene 
@@ -541,6 +519,8 @@ app.sendRepo = function (){
 		alert("Completare tutti i campi prima di inviare la segnalazione!");
 	}
 	else{
+		/** avvio l'animazione di caricamento */
+		app.startWaiting("Invio Segnalazione ...");
 		/* accede al gps per ottenere la posizione */
 		navigator.geolocation.getCurrentPosition(
 				/* funzione chiamata in caso di successo */
@@ -550,11 +530,7 @@ app.sendRepo = function (){
 					/* invio della segnalazione al server */
 					console.log(app.segnalazione);
 					
-					/** avvio l'animazione di caricamento */
-					app.startWaiting("Invio Segnalazione ...");
 					georep.db.postDoc(app.segnalazione, function(err, data){
-						/** appena la chiamata ritorna termino l'animazione */
-						app.stopWaiting();
 						if(!err){
 							console.log(data);
 							/* salvo localmente la segnalazione */
@@ -563,23 +539,25 @@ app.sendRepo = function (){
 		    	    			app.segnalazioneLocale.indirizzo = indirizzo;
 		    	    			app.segnalazioneLocale._id = data.id;
                                 app.segnalazioneLocale.data = (new Date()).getTime();
-                                app.localRepo.put(app.segnalazioneLocale, function(err, response){
-                                       err ? console.log(err) : console.log(response);
-                                });
-
+                                localStorage.setItem(app.segnalazioneLocale._id, JSON.stringify(app.segnalazioneLocale));
+                                
                                 app.utenteRepoLocale._id = georep.user._id;
                                 app.utenteRepoLocale.nick = georep.user.nick;
                                 app.utenteRepoLocale.mail = georep.user.mail;
-                                app.localUsers.put(app.utenteRepoLocale, function(err, response){
-                                    err ? console.log(err) : console.log(response);
-                                });
-
+                                localStorage.setItem(app.utenteRepoLocale._id, JSON.stringify(app.utenteRepoLocale));
+                                
                                 /* aggiorno la lista locale delle mie segnalazioni e delle ultime segnalazioni
                                  * in modo che se la connessione alla rete internet non è più disponibile dopo che
                                  * la segnalazione è stata consegnata al server, nelle liste questa compaia comunque.
                                  */
                                 var tmpVet = localStorage.getItem(app.MYREPOLIST);
-                                var parsTmpVet = JSON.parse(tmpVet);
+                                var parsTmpVet;
+                                if (tmpVet == null){
+                                	parsTmpVet = [];
+                                }
+                                else{
+                                	parsTmpVet = JSON.parse(tmpVet);
+                                } 
                                 parsTmpVet.unshift(
                                     {
                                         id: data.id,
@@ -591,7 +569,12 @@ app.sendRepo = function (){
                                 localStorage.setItem(app.MYREPOLIST, jsonTmpVet);
 
                                 tmpVet = localStorage.getItem(app.LASTREPOLIST);
-                                parsTmpVet = JSON.parse(tmpVet);
+                                if (tmpVet == null){
+                                	parsTmpVet == [];
+                                } 
+                                else {
+                                	parsTmpVet = JSON.parse(tmpVet);
+                                }
                                 parsTmpVet.unshift(
                                     {
                                         id: data.id,
@@ -605,12 +588,16 @@ app.sendRepo = function (){
                                 );
                                 jsonTmpVet = JSON.stringify(parsTmpVet);
                                 localStorage.setItem(app.LASTREPOLIST, jsonTmpVet);
+                                /** appena la chiamata ritorna termino l'animazione */
+								app.stopWaiting();
                                 alert("Segnalazione effettuata!");
                                 app.clearRepo();
                                 app.navigate(app.mainView);
 							});
 						}else{
 							console.log(err);
+							/** appena la chiamata ritorna termino l'animazione */
+							app.stopWaiting();
 							alert("Invio segnalazione fallito!...Prova di nuovo");
 						}
 					});
@@ -618,8 +605,11 @@ app.sendRepo = function (){
 				/* funzione chiamata in caso di errore */
                 function (error){
 					console.log(error);
+					/** appena la chiamata ritorna termino l'animazione */
+					app.stopWaiting();
+					if (error.code == PositionError.TIMEOUT) console.log("timeout scaduto");
 					alert("Impossibile ottenere la posizione. Controllare le impostazioni per il gps");
-				}, {enableHighAccuracy: true}); //opzione che permette di ottenere la posizione sfruttando il gps del dispositivo
+				}, {enableHighAccuracy: true, timeout: 10000}); //opzione che permette di ottenere la posizione sfruttando il gps del dispositivo
 
 	}
 };
@@ -936,8 +926,8 @@ app.bindEvents = function() {
 app.onDeviceReady = function() {
     /* disabilita il funzionamento del tasto back su android, dato che è inutile in questo tipo di app */
     document.addEventListener("backbutton", app.back, false);
-    app.localRepo = new PouchDB("localRepo");
-    app.localUsers = new PouchDB("localUsers");
+    //app.localRepo = new PouchDB("localRepo");
+    //app.localUsers = new PouchDB("localUsers");
 	app.loader();
 };
 

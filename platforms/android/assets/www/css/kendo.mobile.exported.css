@@ -1,0 +1,64 @@
+.km-android .km-view .km-navbar {
+    background-color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
+}
+.km-android .km-view .km-content {
+    background-color: rgb(250, 250, 250);
+    color: rgb(0, 0, 0);
+}
+.km-android .km-view .km-tabstrip .km-button {
+    background-color: rgb(250, 250, 250);
+}
+.km-android .km-view .km-content .km-scrollview {
+    background-color: rgb(250, 250, 250);
+    color: rgb(0, 0, 0);
+}
+.km-android .km-view .km-content .km-list > li .km-switch .km-switch-container {
+    background-color: rgb(229, 229, 229);
+    color: rgb(0, 0, 0);
+}
+.km-android .km-view .km-content .km-list > li .km-switch .km-switch-container .km-android .km-switch-off .km-switch-handle .km-switch-label-off {
+    color: rgb(255, 255, 255);
+}
+.km-android .km-view .km-content .km-listgroup .km-group-title .km-text {
+    color: rgb(0, 0, 0);
+}
+.km-android .km-view .km-navbar .km-button .km-text {
+    color: rgb(0, 0, 0);
+}
+.km-android .km-view .km-navbar .km-view-title > * .km-button .km-text {
+    color: rgb(0, 0, 0);
+}
+.km-android .km-view .km-content .km-listgroupinset .km-group-title .km-text {
+    color: rgb(0, 0, 0);
+}
+.km-android .km-view .km-navbar .km-view-title > * .km-button {
+    background-color: rgb(229, 229, 229);
+}
+.km-android .km-view .km-navbar .km-view-title > * .km-button.km-state-active {
+    background-color: rgb(0, 187, 230);
+}
+.km-android .km-view .km-navbar .km-view-title > * .km-button.km-state-active .km-text {
+    color: rgb(255, 255, 255);
+}
+.km-android .km-view .km-content .km-button.km-state-active {
+    background-color: rgb(0, 187, 230);
+}
+.km-android .km-view .km-content .km-button {
+    background-color: rgb(229, 229, 229);
+}
+.km-android .km-view .km-content .km-button .km-text {
+    color: rgb(0, 0, 0);
+}
+.km-android .km-view .km-content .km-button.km-state-active .km-text {
+    color: rgb(255, 255, 255);
+}
+.km-android .km-view .km-tabstrip .km-button .km-icon {
+    color: rgb(127, 127, 127);
+}
+.km-android .km-view .km-tabstrip .km-state-active span.km-icon {
+    color: rgb(0, 187, 230);
+}
+.km-android .km-view .km-content .km-list .km-state-active .km-listview-link {
+    background-color: rgba(0, 187, 230, 0.74902);
+}

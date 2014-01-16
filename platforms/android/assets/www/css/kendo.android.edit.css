@@ -1,0 +1,57 @@
+
+/* visulaizza il titolo nella navbar */ 
+.km-android .km-navbar .km-view-title {
+	visibility: visible;
+}
+
+/* navbar in alto */
+.km-root .km-android .km-view {
+	-webkit-box-direction: normal;
+	-webkit-flex-direction: column;
+}
+
+/* stile navbar su android */
+.km-android .km-navbar{
+	height: 48px;
+	display: inline-block;
+	padding: 0;
+}
+/* modifica lo stile del form di classe 'newformstyle' */
+.km-root .newformstyle .km-listview label {
+  width: 100%;
+}
+
+.km-wp .newformstyle .km-listview label {
+  color: #999;
+}
+
+.km-root .km-pane .km-view.newformstyle .km-listview input {
+  position: relative;
+  width: 100%;
+  right: 0;
+  margin-top: 0;
+  top: 0;
+}
+
+.km-root .km-wp .km-view.newformstyle .km-listview input {
+  margin-top: .2em;
+}
+
+.km-root .km-ios .km-view.newformstyle .km-listview input,
+.km-root .km-ios7 .km-view.newformstyle .km-listview input {
+  padding: .4em 0;
+}
+
+/* tema leggermente meno nero */
+.km-android .km-view .km-content {
+    background-color: rgb(76, 76, 76);
+    background-image: -webkit-gradient(linear,50% 0,50% 100%,color-stop(0, rgba(0,0,0,.8)),color-stop(1, rgba(0,0,0,.2)));
+    background-image: -moz-linear-gradient(50% 0,50% 100%,rgba(0,0,0,.8),rgba(0,0,0,.2));
+    background-image: -ms-linear-gradient(50% 0,50% 100%,rgba(0,0,0,.8),rgba(0,0,0,.2));
+    background-repeat: repeat;
+    background-position: 0 0;
+}
+.km-android .km-view .km-navbar {
+    background-color: rgb(25, 25, 25);
+}
+
