@@ -213,6 +213,11 @@ module.exports = [
         "clobbers": [
             "navigator.geolocation"
         ]
+    },
+    {
+        "file": "plugins/org.jshybugger.cordova/www/jsHybuggerLoader.js",
+        "id": "org.jshybugger.cordova.jsHybuggerLoader",
+        "runs": true
     }
 ]
 });

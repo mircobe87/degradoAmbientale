@@ -478,10 +478,6 @@ app.utenteRepoLocale = {
 	nick: "",
 	mail: ""
 };
-/* database di segnalazioni memorizzate in locale (serve per il caching)*/
-//app.localRepo = {};
-/* database contentente il nick e le mail degli utenti relativi alle segnalazioni memorizzate in locale (serve per il caching)*/
-//app.localUsers = {};
 
 /** 
  * avvia l'app fotocamera per scattare la foto da segnalare, se non ci sono errori, l'anteprima della foto viene 
@@ -545,19 +541,11 @@ app.sendRepo = function (){
                                 app.segnalazioneLocale.data = (new Date()).getTime();
                                 localStorage.setItem(app.segnalazioneLocale._id, JSON.stringify(app.segnalazioneLocale));
                                 
-                                /*app.localRepo.put(app.segnalazioneLocale, function(err, response){
-                                       err ? console.log(err) : console.log(response);
-                                });*/
-
                                 app.utenteRepoLocale._id = georep.user._id;
                                 app.utenteRepoLocale.nick = georep.user.nick;
                                 app.utenteRepoLocale.mail = georep.user.mail;
                                 localStorage.setItem(app.utenteRepoLocale._id, JSON.stringify(app.utenteRepoLocale));
                                 
-                                /*app.localUsers.put(app.utenteRepoLocale, function(err, response){
-                                    err ? console.log(err) : console.log(response);
-                                });*/
-
                                 /* aggiorno la lista locale delle mie segnalazioni e delle ultime segnalazioni
                                  * in modo che se la connessione alla rete internet non è più disponibile dopo che
                                  * la segnalazione è stata consegnata al server, nelle liste questa compaia comunque.
