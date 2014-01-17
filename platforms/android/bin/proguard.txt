@@ -1,9 +1,0 @@
-# view AndroidManifest.xml #generated:6
--keep class it.unipi.tirocinio.crossplatform.degradoAmbientale.HelloWorld { <init>(...); }
-
-# view AndroidManifest.xml #generated:12
--keep class org.jshybugger.DebugContentProvider { <init>(...); }
-
-# view AndroidManifest.xml #generated:15
--keep class org.jshybugger.DebugService { <init>(...); }
-

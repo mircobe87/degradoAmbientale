@@ -128,9 +128,24 @@ app.initMap = function(e){
 		var lat = pos.coords.latitude;
 		var lng = pos.coords.longitude;
 		var newPosition = new google.maps.LatLng(lat,lng);
-		//console.log("lat: "+lat + " lng: " + lng); 
+		console.log("initMap(): getCurrentPosition... OK");
+		console.log("               lat: " + lat + " Nord");
+		console.log("               lng: " + lng + " Est ");
 		app.map.setCenter(newPosition);
 		app.markMyLoc.setPosition(newPosition);
+	},function(error){
+		console.log("initMap(): getCurrentPosition... ERROR");
+		console.log("               code:    " + error.code);
+		console.log("               message: " + error.code);
+		if (error.code == PositionError.TIMEOUT) {
+			// da gestire se si usa la posizione accurata.
+		}else{
+			alert("Impossibile ottenere la posizione.\nControllare impostazioni GPS.");
+		}
+	},{
+		maximumAge: 15000,
+		timeout: 5000,
+		enableHighAccuracy: false
 	});
 
 	/**
@@ -528,7 +543,12 @@ app.sendRepo = function (){
 					app.segnalazione.loc.latitude = position.coords.latitude;
 					app.segnalazione.loc.longitude = position.coords.longitude;
 					/* invio della segnalazione al server */
-					console.log(app.segnalazione);
+					console.log("sendRepo(): getCurrentPosition... OK");
+					console.log(                 "lat: " + app.segnalazione.loc.latitude + "Nord");
+					console.log(                 "lng: " + app.segnalazione.loc.longitude + "Est");
+					
+					console.log("sendRepo(): segnalazione inviata...");
+					console.log("    " + JSON.stringify(app.segnalazione));
 					
 					georep.db.postDoc(app.segnalazione, function(err, data){
 						if(!err){
@@ -604,12 +624,14 @@ app.sendRepo = function (){
 				},
 				/* funzione chiamata in caso di errore */
                 function (error){
-					console.log(error);
+					console.log("sendRepo(): getCurrentPosition... ERROR");
+					console.log("                code:    " + error.code);
+					console.log("                message: " + error.code);
 					/** appena la chiamata ritorna termino l'animazione */
 					app.stopWaiting();
 					if (error.code == PositionError.TIMEOUT) console.log("timeout scaduto");
 					alert("Impossibile ottenere la posizione. Controllare le impostazioni per il gps");
-				}, {enableHighAccuracy: true, timeout: 10000}); //opzione che permette di ottenere la posizione sfruttando il gps del dispositivo
+				}, {enableHighAccuracy: false, timeout: 5000, maximumAge: 15000}); //opzione che permette di ottenere la posizione sfruttando il gps del dispositivo
 
 	}
 };
