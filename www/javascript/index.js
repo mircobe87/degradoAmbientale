@@ -378,13 +378,13 @@ app.loadRepo = function(e){
 	    	 }
 	    	 else {
 
-                 var remoteAttachmentUrl = encodeURI(georep.db.proto + "://" + georep.db.host + ":" + georep.db.port + "/" + georep.db.name + "/" + app.query.docId + "/" + app.ATTACHMENT_REMOTE_NAME);
+                 var remoteAttachmentUrl = encodeURI(georep.db.proto + georep.db.host + ":" + georep.db.port + "/" + georep.db.name + "/" + app.query.docId + "/" + app.ATTACHMENT_REMOTE_NAME);
 
                  requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem){
                      // funzione chiamata in caso sia stato ottenuto un filesystem con successo
                      // creo una directory (se non esiste già) nella quale salvare l'immagine scattata dalla fotocamera
                      console.log("FileSystem open with name: " + fileSystem.name);
-                     fileSystem.root.getDirectory("android/data/it.unipi.tirocinio.crossplatform.degradoAmbientale/cache", {create: true}, function(parent){
+                     fileSystem.root.getDirectory(app.NAME_DIR_IMG, {create: true}, function(parent){
                          // funzione chiamata in caso sia stato possibile creare la directory
                          // salvo l'immagine in questa dir
                          console.log("Directory open/create");
@@ -430,6 +430,23 @@ app.loadRepo = function(e){
                                      }
                                  }
                              );
+                             $("#descrizione").text(data.msg);
+                             $("#repoDetail-title").text(data.title);
+                             $("#data").text(app.dateToString(data.date));
+                             app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
+                                 $("#indirizzo").text(indirizzo);
+                                 /* salvo la segnalazione letta nel database locale */
+                                 app.segnalazioneLocale.indirizzo = indirizzo;
+                                 app.segnalazioneLocale._id = app.query.docId;
+                                 app.segnalazioneLocale.title = data.title;
+                                 app.segnalazioneLocale.msg = data.msg;
+                                 app.segnalazioneLocale.img = filePath;
+                                 app.segnalazioneLocale.data = data.date;
+                                 localStorage.setItem(app.segnalazioneLocale._id, JSON.stringify(app.segnalazioneLocale));
+                                 /** appena la chiamata ritorna termino l'animazione */
+                                 app.stopWaiting();
+                             });
+
                          }, function(error){
                              console.log("Impossible open/create file. Error: ");
                              console.log(error.code);
@@ -443,24 +460,6 @@ app.loadRepo = function(e){
                      console.log(error.code);
                  });
 
-
-	    		 $("#descrizione").text(data.msg);
-	    		 $("#repoDetail-title").text(data.title);
-                 $("#data").text(app.dateToString(data.date));
-	    		 app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
-	    			 $("#indirizzo").text(indirizzo);
-	    			 /* salvo la segnalazione letta nel database locale */
-	    			 app.segnalazioneLocale.indirizzo = indirizzo;
-	    			 app.segnalazioneLocale._id = app.query.docId;
-    	    		 app.segnalazioneLocale.title = data.title;
-    	    		 app.segnalazioneLocale.msg = data.msg;
-    	    		 app.segnalazioneLocale.img.content_type = data._attachments.img.content_type;
-    	    		 app.segnalazioneLocale.img.data = data._attachments.img.data;
-    	    		 app.segnalazioneLocale.data = data.date;
-    	    		 localStorage.setItem(app.segnalazioneLocale._id, JSON.stringify(app.segnalazioneLocale));
-    	    		 /** appena la chiamata ritorna termino l'animazione */
-    	    	     app.stopWaiting();
-    	    	}); 
     	    }
 	    });
      } else {
@@ -559,7 +558,10 @@ app.utenteRepoLocale = {
 /* URI temporaneo della foto appena scattata per la segnalazione */
 app.tmpUri = "";
 /* Nome */
-app.ATTACHMENT_REMOTE_NAME = "img.jpeg";
+app.ATTACHMENT_REMOTE_NAME = "img";
+/* Nome cartella contenente le foto locali */
+app.NAME_DIR_IMG = "degradoAmbientaleCache";
+
 /** 
  * avvia l'app fotocamera per scattare la foto da segnalare, se non ci sono errori, l'anteprima della foto viene 
  * mostrata nella pagina di segnalazione.
@@ -620,7 +622,7 @@ app.sendRepo = function (){
 						if(!err){
 							console.log(data);
                             var ID = data.id;
-                            var uploadUrl = encodeURI(georep.db.proto + "://" + georep.db.host + ":" + georep.db.port + "/" + georep.db.name + "/" + ID);
+                            var uploadUrl = encodeURI(georep.db.proto + georep.db.host + ":" + georep.db.port + "/" + georep.db.name + "/" + ID);
                             var localFile = app.tmpUri;
 
                             var ft = new FileTransfer();
