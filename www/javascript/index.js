@@ -624,7 +624,7 @@ app.sendRepo = function (){
                             console.log("            data: " + JSON.stringify(data));
 
                             var ID = data.id;
-                            var uploadUrl = encodeURI(georep.db.proto + georep.db.host + ":" + georep.db.port + "/" + georep.db.name + "/" + ID);
+                            var uploadUrl = encodeURI(georep.db.proto + georep.db.host + ":" + georep.db.port + "/" + georep.db.name + "/" + ID + "/" + app.ATTACHMENT_REMOTE_NAME);
                             var localFile = app.tmpUri;
 
                             app.segnalazioneLocale.title = app.segnalazione.title;
