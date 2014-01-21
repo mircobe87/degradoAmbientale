@@ -305,20 +305,30 @@ var georep = {
 		 *                           longitude: (number) longitudine est
 		 *                       }
 		 *     }
+		 *
+		 * attach (boolean) :
+		 *     true  - invia al server anche l'allegato (img: { ... );
+		 *     false - ignora la property 'img' e invia al server un documento
+		 *             privo di allegato. 
+		 *
 		 * callback ( function(err, data) ):
 		 *     funzione di callback chiamata sia in caso di errore che di successo;
 		 *        err:  oggetto che descrive l'errore, se si e' verificato;
 		 *        data: oggetto che mostra le opzioni settate se non si sono verificati errori.
 		 */ 
-		postDoc: function(doc,callback){
-			if( arguments.length < 1 )
-				throw 'postDoc() richiede almeno 1 argomento: doc (object).';
+		postDoc: function(doc, attach, callback){
+			if( arguments.length < 2 )
+				throw 'postDoc() richiede almeno 2 argomenti: doc (object), attach (boolean).';
+			else if ( typeof attach != 'boolean' )
+				throw 'Parametro "attach" non valito.';
 			else if ( typeof doc != 'object' ||
 			!doc.title || typeof doc.title != 'string' ||
 			!doc.msg   || typeof doc.msg   != 'string' ||
-			!doc.img   || typeof doc.img   != 'object' ||
-			!doc.img.content_type || typeof doc.img.content_type != 'string' ||
-			!doc.img.data         || typeof doc.img.data         != 'string' ||
+			attach && (
+			    !doc.img   || typeof doc.img   != 'object' ||
+			    !doc.img.content_type || typeof doc.img.content_type != 'string' ||
+			    !doc.img.data         || typeof doc.img.data         != 'string'
+			) ||
 			!doc.loc || typeof doc.loc != 'object' ||
 			!doc.loc.latitude  || typeof doc.loc.latitude  != 'number' || doc.loc.latitude  >  90 || doc.loc.latitude  <  -90 ||
 			!doc.loc.longitude || typeof doc.loc.longitude != 'number' || doc.loc.longitude > 180 || doc.loc.longitude < -180 ){
@@ -330,9 +340,12 @@ var georep = {
 				newDoc.date = (new Date()).getTime();
 				newDoc.msg = doc.msg;
 				newDoc.loc = doc.loc;
-				newDoc._attachments = {
-					img: doc.img
-				};
+				if (attach) {
+					newDoc._attachments = {
+						img: doc.img
+					};
+				}
+				
 				$.ajax({
 					url: georep.db.proto + georep.db.host + ':' +
 						 georep.db.port + '/' + georep.db.name,

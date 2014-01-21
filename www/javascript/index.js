@@ -598,8 +598,8 @@ app.sendRepo = function (){
 	app.segnalazione.img.content_type = "image/png";*/
 	/*console.log(segnalazione.titolo);
 	console.log(segnalazione.descrizione);*/
-	if (!app.segnalazione.title || !app.segnalazione.msg || !app.segnalazione.img.data){
-		alert("Completare tutti i campi prima di inviare la segnalazione!");
+	if (!app.segnalazione.title || !app.segnalazione.msg || app.tmpUri == "" ){
+		alert("Completare tutti i campi e scattare una foto prima di inviare la segnalazione!");
 	}
 	else{
 		/** avvio l'animazione di caricamento */
@@ -618,90 +618,101 @@ app.sendRepo = function (){
 					console.log("sendRepo(): segnalazione inviata...");
 					console.log("    " + JSON.stringify(app.segnalazione));
 					
-					georep.db.postDoc(app.segnalazione, function(err, data){
+					georep.db.postDoc(app.segnalazione, false, function(err, data){
 						if(!err){
-							console.log(data);
+							console.log("sendRepo(): documento postato sul server");
+                            console.log("            data: " + JSON.stringify(data));
+
                             var ID = data.id;
                             var uploadUrl = encodeURI(georep.db.proto + georep.db.host + ":" + georep.db.port + "/" + georep.db.name + "/" + ID);
                             var localFile = app.tmpUri;
+
+                            app.segnalazioneLocale.title = app.segnalazione.title;
+                            app.segnalazioneLocale.msg = app.segnalazione.msg;
+                            app.segnalazioneLocale.img = app.tmpUri;
+                            app.segnalazioneLocale._id = ID;
+                            app.segnalazioneLocale.data = (new Date()).getTime();
+
+                            app.utenteRepoLocale._id = georep.user._id;
+                            app.utenteRepoLocale.nick = georep.user.nick;
+                            app.utenteRepoLocale.mail = georep.user.mail;
+                            localStorage.setItem(app.utenteRepoLocale._id, JSON.stringify(app.utenteRepoLocale));
+
+                            app.coordsToAddress(app.segnalazione.loc.latitude, app.segnalazione.loc.longitude, function(indirizzo){
+                                app.segnalazioneLocale.indirizzo = indirizzo;
+                                localStorage.setItem(app.segnalazioneLocale._id, JSON.stringify(app.segnalazioneLocale));
+
+                                /* aggiorno la lista locale delle mie segnalazioni e delle ultime segnalazioni
+                                 * in modo che se la connessione alla rete internet non è più disponibile dopo che
+                                 * la segnalazione è stata consegnata al server, nelle liste questa compaia comunque.
+                                 */
+                                var tmpVet = localStorage.getItem(app.MYREPOLIST);
+                                var parsTmpVet;
+                                if (tmpVet == null){
+                                    parsTmpVet = [];
+                                }
+                                else{
+                                    parsTmpVet = JSON.parse(tmpVet);
+                                }
+                                parsTmpVet.unshift(
+                                    {
+                                        id: ID,
+                                        key: app.utenteRepoLocale._id,
+                                        value: app.segnalazioneLocale.title
+                                    }
+                                );
+                                var jsonTmpVet = JSON.stringify(parsTmpVet);
+                                localStorage.setItem(app.MYREPOLIST, jsonTmpVet);
+
+                                tmpVet = localStorage.getItem(app.LASTREPOLIST);
+                                if (tmpVet == null){
+                                    parsTmpVet == [];
+                                }
+                                else {
+                                    parsTmpVet = JSON.parse(tmpVet);
+                                }
+                                parsTmpVet.unshift(
+                                    {
+                                        id: ID,
+                                        key: (new Date()).getTime(),
+                                        value: {
+                                            _id: ID,
+                                            userId: app.utenteRepoLocale._id,
+                                            title: app.segnalazioneLocale.title
+                                        }
+                                    }
+                                );
+                                jsonTmpVet = JSON.stringify(parsTmpVet);
+                                localStorage.setItem(app.LASTREPOLIST, jsonTmpVet);
+                            });
 
                             var ft = new FileTransfer();
                             ft.upload(localFile, uploadUrl, function(response){
                                 // se l'invio dell'allegato ha successo...
                                 /* salvo localmente la segnalazione */
-                                app.segnalazioneLocale.title = app.segnalazione.title;
-                                app.segnalazioneLocale.msg = app.segnalazione.msg;
-                                app.segnalazioneLocale.img = app.tmpUri;
-                                app.segnalazioneLocale._id = ID;
+                                /** appena la chiamata ritorna termino l'animazione */
+                                app.stopWaiting();
+                                alert("Segnalazione effettuata!");
+                                app.clearRepo();
+                                app.navigate(app.mainView);
 
-                                app.coordsToAddress(app.segnalazione.loc.latitude, app.segnalazione.loc.longitude, function(indirizzo){
-                                    app.segnalazioneLocale.indirizzo = indirizzo;
-                                    app.segnalazioneLocale.data = (new Date()).getTime();
-                                    localStorage.setItem(app.segnalazioneLocale._id, JSON.stringify(app.segnalazioneLocale));
-
-                                    app.utenteRepoLocale._id = georep.user._id;
-                                    app.utenteRepoLocale.nick = georep.user.nick;
-                                    app.utenteRepoLocale.mail = georep.user.mail;
-                                    localStorage.setItem(app.utenteRepoLocale._id, JSON.stringify(app.utenteRepoLocale));
-
-                                    /* aggiorno la lista locale delle mie segnalazioni e delle ultime segnalazioni
-                                     * in modo che se la connessione alla rete internet non è più disponibile dopo che
-                                     * la segnalazione è stata consegnata al server, nelle liste questa compaia comunque.
-                                     */
-                                    var tmpVet = localStorage.getItem(app.MYREPOLIST);
-                                    var parsTmpVet;
-                                    if (tmpVet == null){
-                                        parsTmpVet = [];
-                                    }
-                                    else{
-                                        parsTmpVet = JSON.parse(tmpVet);
-                                    }
-                                    parsTmpVet.unshift(
-                                        {
-                                            id: data.id,
-                                            key: app.utenteRepoLocale._id,
-                                            value: app.segnalazioneLocale.title
-                                        }
-                                    );
-                                    var jsonTmpVet = JSON.stringify(parsTmpVet);
-                                    localStorage.setItem(app.MYREPOLIST, jsonTmpVet);
-
-                                    tmpVet = localStorage.getItem(app.LASTREPOLIST);
-                                    if (tmpVet == null){
-                                        parsTmpVet == [];
-                                    }
-                                    else {
-                                        parsTmpVet = JSON.parse(tmpVet);
-                                    }
-                                    parsTmpVet.unshift(
-                                        {
-                                            id: data.id,
-                                            key: (new Date()).getTime(),
-                                            value: {
-                                                _id: data.id,
-                                                userId: app.utenteRepoLocale._id,
-                                                title: app.segnalazioneLocale.title
-                                            }
-                                        }
-                                    );
-                                    jsonTmpVet = JSON.stringify(parsTmpVet);
-                                    localStorage.setItem(app.LASTREPOLIST, jsonTmpVet);
-                                    /** appena la chiamata ritorna termino l'animazione */
-                                    app.stopWaiting();
-                                    alert("Segnalazione effettuata!");
-                                    app.clearRepo();
-                                    app.navigate(app.mainView);
-                                });
                             },function(error){
                                 // se l'invio dell'allegato fallisce....
+                                console.log("sendRepo(): invio allegato FALLITO");
+                                console.log("            error: " + JSON.stringify(error));
+
+                                /** appena la chiamata ritorna termino l'animazione */
+                                app.stopWaiting();
+                                alert("Segnalazione effettuata!");
+                                app.clearRepo();
+                                app.navigate(app.mainView);
                             },{
                                 fileName: app.ATTACHMENT_REMOTE_NAME,
                                 mimeType: "image/jpeg",
                                 headers: {
                                     Authorization: " Basic " + georep.user.base64
                                 }
-                            });
-
+                            },false);
 
 						}else{
 							console.log(err);
@@ -732,6 +743,8 @@ app.clearRepo = function(){
 	app.segnalazione.img = "";
 	app.segnalazione.loc.latitude = "";
 	app.segnalazione.loc.longitude = "";
+
+    app.tmpUri = "";
 
 	$("#titoloToRepo")[0].value = '';
 	$("#descrizioneToRepo")[0].value = '';
