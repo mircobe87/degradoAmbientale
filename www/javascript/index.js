@@ -312,12 +312,14 @@ app.getDataFromServer = function(){
 	}*/
     /* se non c'è connessione di rete si prende la lista locale delle segnalazioni */
     if (app.checkConnection() == false){
-     if(localStorage.getItem(app.MYREPOLIST) != null)
+     if(localStorage.getItem(app.MYREPOLIST) != null){
         app.customerDataSource.data(JSON.parse(localStorage.getItem(app.MYREPOLIST)));
+     }
      else
          app.customerDataSource.data([]);
         console.log(app.customerDataSource);
         console.log("Non c'è connessione di rete.");
+        app.stopWaiting();
     }
     /* se c'è connessione di rete si prende la lista delle segnalazioni da remoto e poi si aggiorna quella locale */
 	else {
@@ -326,6 +328,7 @@ app.getDataFromServer = function(){
 		georep.db.getUserDocs(georep.user._id, function(err, data){
 			if (err != undefined){
 				alert("Impossibile caricare i dati dal server");
+                app.stopWaiting();
 			}
 			else{
 				/* inserisce i dati contenuti in data.rows nella listView.
@@ -338,10 +341,11 @@ app.getDataFromServer = function(){
                 localStorage.setItem(app.MYREPOLIST, JSON.stringify(data.rows));
                 console.log("Dati salvati nel localStorage");
                 console.log(localStorage.getItem(app.MYREPOLIST));
+                app.stopWaiting();
 			}
 		});
 	}
-    app.stopWaiting();
+
 };
 
 /* permette di ottenere un indirizzo a partite da una latitudine e una longitudine */
@@ -624,8 +628,10 @@ app.sendRepo = function (){
                             console.log("            data: " + JSON.stringify(data));
 
                             var ID = data.id;
-                            var uploadUrl = encodeURI(georep.db.proto + georep.db.host + ":" + georep.db.port + "/" + georep.db.name + "/" + ID + "/" + app.ATTACHMENT_REMOTE_NAME);
+                            var REV = data.rev;
+                            var uploadUrl = encodeURI(georep.db.proto + georep.db.host + ":" + georep.db.port + "/" + georep.db.name + "/" + ID + "/" + app.ATTACHMENT_REMOTE_NAME + "?rev=" + REV);
                             var localFile = app.tmpUri;
+
 
                             app.segnalazioneLocale.title = app.segnalazione.title;
                             app.segnalazioneLocale.msg = app.segnalazione.msg;
@@ -711,11 +717,13 @@ app.sendRepo = function (){
                                 mimeType: "image/jpeg",
                                 headers: {
                                     Authorization: " Basic " + georep.user.base64
-                                }
+                                },
+                                httpMethod: "PUT"
                             },false);
 
 						}else{
-							console.log(err);
+                            console.log("sendRepo(): postDoc error: ");
+							console.log(JSON.stringify(err));
 							/** appena la chiamata ritorna termino l'animazione */
 							app.stopWaiting();
 							alert("Invio segnalazione fallito!...Prova di nuovo");
