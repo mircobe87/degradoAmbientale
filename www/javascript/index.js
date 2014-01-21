@@ -711,7 +711,8 @@ app.sendRepo = function (){
                                 mimeType: "image/jpeg",
                                 headers: {
                                     Authorization: " Basic " + georep.user.base64
-                                }
+                                },
+                                httpMethod: "PUT"
                             },false);
 
 						}else{
