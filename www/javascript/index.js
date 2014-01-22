@@ -598,8 +598,6 @@ app.getPhoto = function(){
 app.sendRepo = function (){
 	app.segnalazione.title = $("#titoloToRepo").val();
 	app.segnalazione.msg = $("#descrizioneToRepo").val();
-	/*app.segnalazione.img.data = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAlCAYAAAAjt+tHAAACtUlEQVRYhe2XT2sTQRiHn12ScVlLUkqJBmzJFxAriiBCT1vw6qfwCxSq4lkN9OzX8Cokp4IUpPXPNwjx0hQp3RDDZhJ2PWQmnZRkM5tuqQdfGGZ3szu/Z9/5TXZeJ0kSAHZ2dgqACwjVF8g3RkAMSCBuNBojACdJEi0uAE81oQDcnMRjBSCBSDXZaDRGThAEWtwHSqr3uJ4MREAf6Kpe6rf0lHilWaof5iw8FUF376k6jIGRmXq/WaofrtdqCN+n6HlzBzk5OUFKieM4JElCsVikWq2mCg+jCNnv02zVD4Pu3n3UNLhcGM8DFop3Oh2klHx9fYfhx3t8e3uX4XBIp9NJBSh6HsL39an2mavdrluqOICUkoPdCo9rt3Bdh60NwcFuBSll6nOXxp5oapdncvvWhkg9tww3s7COH79k6nlmiiwhhGB7/5Sj1oA4TjhqDdjeP0WIpbJgt9bDMCQMw6lrT95Pm24wGNButwEol8uUy+V8AV49L/HuxerCe998OufD59AawHoKbMSz3JcZYPLAy3am67kDzIo4TpZ+Nq+v3c0CuK5zswBXCetvvo3JljGiFcDm5ubkWP/ZLLrPNq40BcsuvdwA8oj/AP8MQHwD2rEGGBmNYRRdm6Ix9kSzwEW5FAHIfh9I35yay892KeptuYpIacZOEAQCWAFWSSlM1ms1bq+tWYn9OTvjd6s18zdVmJwC50BPZyBiXC6higazNHMBmq36F2AhhBYPunvP1CXtr8ulWQTENsXpZA/fLNWP0zJhiD9i2lvzi9MF5bnuzfLt+ywIQ/yheks9zybA7PI8LRSYx9gnKwripwlhiD9Q4j3VIi00LxYCzIFY0ZkAzDfvkUHcGmAGRElBHAN6znuMzWUtngngEoSvmi6HJOPU97OIZwYwILQp9VLVS0xmEQf4CxeGT7W/5EujAAAAAElFTkSuQmCC";
-	app.segnalazione.img.content_type = "image/png";*/
 	/*console.log(segnalazione.titolo);
 	console.log(segnalazione.descrizione);*/
 	if (!app.segnalazione.title || !app.segnalazione.msg || app.tmpUri == "" ){
@@ -610,127 +608,124 @@ app.sendRepo = function (){
 		app.startWaiting("Invio Segnalazione ...");
 		/* accede al gps per ottenere la posizione */
 		navigator.geolocation.getCurrentPosition(
-				/* funzione chiamata in caso di successo */
+				/* funzione chiamata in caso di posizione ottenuta con successo */
 				function (position){
 					app.segnalazione.loc.latitude = position.coords.latitude;
 					app.segnalazione.loc.longitude = position.coords.longitude;
-					/* invio della segnalazione al server */
+
 					console.log("sendRepo(): getCurrentPosition... OK");
 					console.log(                 "lat: " + app.segnalazione.loc.latitude + "Nord");
 					console.log(                 "lng: " + app.segnalazione.loc.longitude + "Est");
-					
-					console.log("sendRepo(): segnalazione inviata...");
-					console.log("    " + JSON.stringify(app.segnalazione));
-					
-					georep.db.postDoc(app.segnalazione, false, function(err, data){
-						if(!err){
-							console.log("sendRepo(): documento postato sul server");
-                            console.log("            data: " + JSON.stringify(data));
 
-                            var ID = data.id;
-                            var REV = data.rev;
-                            var uploadUrl = encodeURI(georep.db.proto + georep.db.host + ":" + georep.db.port + "/" + georep.db.name + "/" + ID + "/" + app.ATTACHMENT_REMOTE_NAME + "?rev=" + REV);
-                            var localFile = app.tmpUri;
+                    // apro il file app.tmpUri (quello scattata dalla fotocamera) in base64 per poterlo inviare al server
+                    var reader = new FileReader();
+                    reader.onerror = function (error){
+                      console.log("sendRepo(): errore reader con codice: " + error.code);
+                      alert("Errore applicazione");
+                    };
+                    // se il file viene aperto correttamente invio la segnalazione al server e la salvo in locale
+                    reader.onload = function (evt){
+                        app.segnalazione.img.data = evt.target.result.split(",")[1];
+                        app.segnalazione.img.content_type = "image/jpeg";
+                        console.log("sendRepo(): file aperto...");
+                        console.log("    " + app.segnalazione);
+                        georep.db.postDoc(app.segnalazione, true, function(err, data){
+                            if(!err){
+                                console.log("sendRepo(): documento postato sul server");
+                                console.log("            data: " + JSON.stringify(data));
 
+                                app.segnalazioneLocale.title = app.segnalazione.title;
+                                app.segnalazioneLocale.msg = app.segnalazione.msg;
+                                // la segnalazione locale contiene l'immagine in binario e non in base64
+                                app.segnalazioneLocale.img = app.tmpUri;
+                                app.segnalazioneLocale._id = data.id;
+                                app.segnalazioneLocale.data = (new Date()).getTime();
 
-                            app.segnalazioneLocale.title = app.segnalazione.title;
-                            app.segnalazioneLocale.msg = app.segnalazione.msg;
-                            app.segnalazioneLocale.img = app.tmpUri;
-                            app.segnalazioneLocale._id = ID;
-                            app.segnalazioneLocale.data = (new Date()).getTime();
+                                app.utenteRepoLocale._id = georep.user._id;
+                                app.utenteRepoLocale.nick = georep.user.nick;
+                                app.utenteRepoLocale.mail = georep.user.mail;
+                                localStorage.setItem(app.utenteRepoLocale._id, JSON.stringify(app.utenteRepoLocale));
 
-                            app.utenteRepoLocale._id = georep.user._id;
-                            app.utenteRepoLocale.nick = georep.user.nick;
-                            app.utenteRepoLocale.mail = georep.user.mail;
-                            localStorage.setItem(app.utenteRepoLocale._id, JSON.stringify(app.utenteRepoLocale));
+                                app.coordsToAddress(app.segnalazione.loc.latitude, app.segnalazione.loc.longitude, function(indirizzo){
+                                    app.segnalazioneLocale.indirizzo = indirizzo;
+                                    localStorage.setItem(app.segnalazioneLocale._id, JSON.stringify(app.segnalazioneLocale));
 
-                            app.coordsToAddress(app.segnalazione.loc.latitude, app.segnalazione.loc.longitude, function(indirizzo){
-                                app.segnalazioneLocale.indirizzo = indirizzo;
-                                localStorage.setItem(app.segnalazioneLocale._id, JSON.stringify(app.segnalazioneLocale));
-
-                                /* aggiorno la lista locale delle mie segnalazioni e delle ultime segnalazioni
-                                 * in modo che se la connessione alla rete internet non è più disponibile dopo che
-                                 * la segnalazione è stata consegnata al server, nelle liste questa compaia comunque.
-                                 */
-                                var tmpVet = localStorage.getItem(app.MYREPOLIST);
-                                var parsTmpVet;
-                                if (tmpVet == null){
-                                    parsTmpVet = [];
-                                }
-                                else{
-                                    parsTmpVet = JSON.parse(tmpVet);
-                                }
-                                parsTmpVet.unshift(
-                                    {
-                                        id: ID,
-                                        key: app.utenteRepoLocale._id,
-                                        value: app.segnalazioneLocale.title
+                                    /* aggiorno la lista locale delle mie segnalazioni e delle ultime segnalazioni
+                                     * in modo che se la connessione alla rete internet non è più disponibile dopo che
+                                     * la segnalazione è stata consegnata al server, nelle liste questa compaia comunque.
+                                     */
+                                    var tmpVet = localStorage.getItem(app.MYREPOLIST);
+                                    var parsTmpVet;
+                                    if (tmpVet == null){
+                                        parsTmpVet = [];
                                     }
-                                );
-                                var jsonTmpVet = JSON.stringify(parsTmpVet);
-                                localStorage.setItem(app.MYREPOLIST, jsonTmpVet);
-
-                                tmpVet = localStorage.getItem(app.LASTREPOLIST);
-                                if (tmpVet == null){
-                                    parsTmpVet == [];
-                                }
-                                else {
-                                    parsTmpVet = JSON.parse(tmpVet);
-                                }
-                                parsTmpVet.unshift(
-                                    {
-                                        id: ID,
-                                        key: (new Date()).getTime(),
-                                        value: {
-                                            _id: ID,
-                                            userId: app.utenteRepoLocale._id,
-                                            title: app.segnalazioneLocale.title
+                                    else{
+                                        parsTmpVet = JSON.parse(tmpVet);
+                                    }
+                                    parsTmpVet.unshift(
+                                        {
+                                            id: data.id,
+                                            key: app.utenteRepoLocale._id,
+                                            value: app.segnalazioneLocale.title
                                         }
+                                    );
+                                    var jsonTmpVet = JSON.stringify(parsTmpVet);
+                                    localStorage.setItem(app.MYREPOLIST, jsonTmpVet);
+
+                                    tmpVet = localStorage.getItem(app.LASTREPOLIST);
+                                    if (tmpVet == null){
+                                        parsTmpVet == [];
                                     }
-                                );
-                                jsonTmpVet = JSON.stringify(parsTmpVet);
-                                localStorage.setItem(app.LASTREPOLIST, jsonTmpVet);
-                            });
+                                    else {
+                                        parsTmpVet = JSON.parse(tmpVet);
+                                    }
+                                    parsTmpVet.unshift(
+                                        {
+                                            id: data.id,
+                                            key: (new Date()).getTime(),
+                                            value: {
+                                                _id: data.id,
+                                                userId: app.utenteRepoLocale._id,
+                                                title: app.segnalazioneLocale.title
+                                            }
+                                        }
+                                    );
+                                    jsonTmpVet = JSON.stringify(parsTmpVet);
+                                    localStorage.setItem(app.LASTREPOLIST, jsonTmpVet);
+                                    alert("Invio segnalazione riuscito!");
+                                    app.stopWaiting();
+                                    app.clearRepo();
+                                    app.navigate(app.mainView);
+                                });
 
-                            var ft = new FileTransfer();
-                            ft.upload(localFile, uploadUrl, function(response){
-                                // se l'invio dell'allegato ha successo...
-                                /* salvo localmente la segnalazione */
-                                /** appena la chiamata ritorna termino l'animazione */
+
+                            }else{
+                                // fallita la post doc
+                                console.log("sendRepo(): postDoc error: ");
+                                console.log(JSON.stringify(err));
+
                                 app.stopWaiting();
-                                alert("Segnalazione effettuata!");
-                                app.clearRepo();
-                                app.navigate(app.mainView);
+                                alert("Invio segnalazione fallito!...Prova di nuovo");
+                            }
+                        });
+                    }
+                    window.resolveLocalFileSystemURI(app.tmpUri, function (fileEntry){
+                        fileEntry.file(function (file){
+                            reader.readAsDataURL(file);
+                        }, function (error){
+                           console.log("sendRepo(): fileEntry.file errore: " + JSON.stringify(error));
+                            app.stopWaiting();
+                            alert("Impossibile inviare la segnalazione. Riprova");
+                        });
+                    }, function (error){
+                        // non è stato possibile aprire il file app.tmpUri
+                        console.log("sendRepo(): resolveLocalFileSystemURI errore: " + JSON.stringify(error));
+                        app.stopWaiting();
+                        alert("Invio segnalazione fallito!...Prova di nuovo");
+                    });
 
-                            },function(error){
-                                // se l'invio dell'allegato fallisce....
-                                console.log("sendRepo(): invio allegato FALLITO");
-                                console.log("            error: " + JSON.stringify(error));
-
-                                /** appena la chiamata ritorna termino l'animazione */
-                                app.stopWaiting();
-                                alert("Segnalazione effettuata!");
-                                app.clearRepo();
-                                app.navigate(app.mainView);
-                            },{
-                                fileName: app.ATTACHMENT_REMOTE_NAME,
-                                mimeType: "image/jpeg",
-                                headers: {
-                                    Authorization: " Basic " + georep.user.base64
-                                },
-                                httpMethod: "PUT"
-                            },false);
-
-						}else{
-                            console.log("sendRepo(): postDoc error: ");
-							console.log(JSON.stringify(err));
-							/** appena la chiamata ritorna termino l'animazione */
-							app.stopWaiting();
-							alert("Invio segnalazione fallito!...Prova di nuovo");
-						}
-					});
 				},
-				/* funzione chiamata in caso di errore */
+				/* funzione chiamata se non si riesce ad ottenere la posizione */
                 function (error){
 					console.log("sendRepo(): getCurrentPosition... ERROR");
 					console.log("                code:    " + error.code);
@@ -748,7 +743,8 @@ app.clearRepo = function(){
 	console.log("clearRepo()");
 	app.segnalazione.title = "";
 	app.segnalazione.msg = "";
-	app.segnalazione.img = "";
+	app.segnalazione.img.data = "";
+    app.segnalazione.img.content_type = "";
 	app.segnalazione.loc.latitude = "";
 	app.segnalazione.loc.longitude = "";
 
