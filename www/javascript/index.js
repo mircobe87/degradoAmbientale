@@ -381,7 +381,7 @@ app.decToSes = function(dec){
 app.loadRepo = function(e){
      georep.db.setDBName('testdb');
      /** avvio l'animazione di caricamento */
-     app.startWaiting("Recupero Dettagli ...");
+     app.startWaiting();
      /** ottengo i dati della segnalazione **/
      /* provo a prendere la segnalazione dal database locale */
      var repo = localStorage.getItem(app.query.docId);
@@ -466,11 +466,11 @@ app.loadRepo = function(e){
                                  app.segnalazioneLocale.msg = data.msg;
                                  app.segnalazioneLocale.img = filePath;
                                  app.segnalazioneLocale.data = data.date;
-                                 app.segnalazioneLocale.latitude = data.loc.latitude;
-                                 app.segnalazioneLocale.longitude = data.log.longitude;
+                                 app.segnalazioneLocale.loc.latitude = data.loc.latitude;
+                                 app.segnalazioneLocale.loc.longitude = data.loc.longitude;
 
                                  localStorage.setItem(app.segnalazioneLocale._id, JSON.stringify(app.segnalazioneLocale));
-                                 /** appena la chiamata ritorna termino l'animazione */
+                                 console.log("stopWaiting()");
                                  app.stopWaiting();
                              });
 
@@ -506,6 +506,8 @@ app.loadRepo = function(e){
 		$("#data").text(app.dateToString(jsonRepo.data));
         $("#latitudine").text(app.decToSes(jsonRepo.loc.latitude) + " °N");
         $("#longitudine").text(app.decToSes(jsonRepo.loc.latitude) + " °E");
+        console.log("stopWaiting()");
+        app.stopWaiting();
 
      }
     
@@ -542,8 +544,7 @@ app.loadRepo = function(e){
             console.log("Dati segnalatore salvati in locale: \n" + localStorage.getItem(app.query.userId));
         }
      });
-     // appena la chiamata ritorna termino l'animazione 
-	 app.stopWaiting();
+
      georep.db.setDBName('testdb');
 };
 
