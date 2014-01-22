@@ -360,6 +360,18 @@ app.coordsToAddress = function (lat, lng, callback){
       }
     });
 };
+
+app.decToSes = function(dec){
+    var n = Math.abs(dec);
+    var sgn = (dec >= 0) ? "" : "-";
+
+    var g = Math.floor(n);
+    var p = Math.floor((n-g)*60);
+    var s = (((n-g)*60-p)*60).toFixed(3);
+
+    return sgn + g + "° " + p + "\' " + s + "\"";
+};
+
 /* carica la segnalazione completa */
 app.loadRepo = function(e){
      georep.db.setDBName('testdb');
@@ -437,8 +449,8 @@ app.loadRepo = function(e){
                              $("#descrizione").text(data.msg);
                              $("#repoDetail-title").text(data.title);
                              $("#data").text(app.dateToString(data.date));
-                             $("#latitudine").text(data.loc.latitude + "°N");
-                             $("#longitudine").text(data.loc.longitude + "°E");
+                             $("#latitudine").text(app.decToSes(data.loc.latitude) + " °N");
+                             $("#longitudine").text(app.decToSes(data.loc.longitude) + " °E");
 
                              app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
                                  $("#indirizzo").text(indirizzo);
@@ -487,8 +499,8 @@ app.loadRepo = function(e){
 		$("#repoImg").attr("src", jsonRepo.img);
 		$("#indirizzo").text(jsonRepo.indirizzo);
 		$("#data").text(app.dateToString(jsonRepo.data));
-        $("#latitudine").text(jsonRepo.loc.latitude + "°N");
-        $("#longitudine").text(jsonRepo.loc.latitude + "°E");
+        $("#latitudine").text(app.decToSes(jsonRepo.loc.latitude) + " °N");
+        $("#longitudine").text(app.decToSes(jsonRepo.loc.latitude) + " °E");
 
      }
     
