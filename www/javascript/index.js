@@ -327,7 +327,12 @@ app.getDataFromServer = function(){
 		georep.db.setDBName(georep.db.name);
 		georep.db.getUserDocs(georep.user._id, function(err, data){
 			if (err != undefined){
-				alert("Impossibile caricare i dati dal server");
+                if(localStorage.getItem(app.MYREPOLIST) != null){
+                    app.customerDataSource.data(JSON.parse(localStorage.getItem(app.MYREPOLIST)));
+                }
+                else
+                    app.customerDataSource.data([]);
+                console.log("Impossibile contattare il server. Lista caricata da locale");
                 app.stopWaiting();
 			}
 			else{
@@ -1224,7 +1229,11 @@ app.getLastDataFromServer = function(){
     else{
         georep.db.getLastDocs(10, function(err, data){
             if (err != undefined){
-                alert("Impossibile caricare i dati dal server");
+                if(localStorage.getItem(app.LASTREPOLIST) != null)
+                    app.lastRepDataSource.data(JSON.parse(localStorage.getItem(app.LASTREPOLIST)));
+                else
+                    app.lastRepDataSource.data([]);
+                console.log("impossibile caricare le ultime segnalazioni dal server. caricata la lista locale");
                 app.stopWaiting();
             }
             else{
