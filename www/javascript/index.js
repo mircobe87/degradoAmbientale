@@ -437,6 +437,9 @@ app.loadRepo = function(e){
                              $("#descrizione").text(data.msg);
                              $("#repoDetail-title").text(data.title);
                              $("#data").text(app.dateToString(data.date));
+                             $("#latitudine").text(data.loc.latitude + "°N");
+                             $("#longitudine").text(data.loc.longitude + "°E");
+
                              app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
                                  $("#indirizzo").text(indirizzo);
                                  /* salvo la segnalazione letta nel database locale */
@@ -446,20 +449,26 @@ app.loadRepo = function(e){
                                  app.segnalazioneLocale.msg = data.msg;
                                  app.segnalazioneLocale.img = filePath;
                                  app.segnalazioneLocale.data = data.date;
+                                 app.segnalazioneLocale.latitude = data.loc.latitude;
+                                 app.segnalazioneLocale.longitude = data.log.longitude;
+
                                  localStorage.setItem(app.segnalazioneLocale._id, JSON.stringify(app.segnalazioneLocale));
                                  /** appena la chiamata ritorna termino l'animazione */
                                  app.stopWaiting();
                              });
 
                          }, function(error){
+                             app.stopWaiting();
                              console.log("Impossible open/create file. Error: ");
                              console.log(error.code);
                          });
                      }, function(error){
+                         app.stopWaiting();
                          console.log("Impossible open/create directory. Error: ");
                          console.log(error.code);
                      });
                  }, function(error){
+                     app.stopWaiting();
                      console.log("impossible open fileSystem. Error: ");
                      console.log(error.code);
                  });
@@ -478,6 +487,8 @@ app.loadRepo = function(e){
 		$("#repoImg").attr("src", jsonRepo.img);
 		$("#indirizzo").text(jsonRepo.indirizzo);
 		$("#data").text(app.dateToString(jsonRepo.data));
+        $("#latitudine").text(jsonRepo.loc.latitude + "°N");
+        $("#longitudine").text(jsonRepo.loc.latitude + "°E");
 
      }
     
@@ -528,6 +539,8 @@ app.hideRepo = function(){
 	$("#indirizzo").text("");
 	$("#repoImg").attr("src", "img/placeholder.png");
     $("#data").text("");
+    $("#latitudine").text("");
+    $("#longitudine").text("");
 };
 /*-------------------------Sezione vista segnalazione ------------------------*/
 app.segnalazione = {
@@ -548,6 +561,10 @@ app.segnalazioneLocale = {
 	title: "",
 	msg: "",
 	img: "",
+    loc: {
+        latitude: "",
+        longitude: ""
+    },
     data: "",
 	indirizzo: ""
 };
@@ -654,6 +671,8 @@ app.sendRepo = function (){
                                 app.segnalazioneLocale.img = app.tmpUri;
                                 app.segnalazioneLocale._id = data.id;
                                 app.segnalazioneLocale.data = (new Date()).getTime();
+                                app.segnalazioneLocale.loc.latitude = app.segnalazione.loc.latitude;
+                                app.segnalazioneLocale.loc.longitude = app.segnalazione.loc.longitude;
 
                                 app.utenteRepoLocale._id = georep.user._id;
                                 app.utenteRepoLocale.nick = georep.user.nick;
