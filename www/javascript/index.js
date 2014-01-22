@@ -594,8 +594,22 @@ app.getPhoto = function(){
 			}, cameraOptions);
 };
 
+/* disabilita un button con id = id */
+app.disableButton = function (id){
+    var tag = "#"+id;
+    console.log("bottone: " + tag + " disabilitato");
+    $(tag).data("kendoMobileButton").enable(false);
+};
+/* abilita un button con id = id */
+app.enableButton = function (id){
+    var tag = "#"+id;
+    console.log("bottone: " + tag + " abilitato");
+    $(tag).data("kendoMobileButton").enable(true);
+};
 /** invia al server la segnalazione */
 app.sendRepo = function (){
+    app.disableButton("sendButton");
+    app.disableButton("takePhoto");
 	app.segnalazione.title = $("#titoloToRepo").val();
 	app.segnalazione.msg = $("#descrizioneToRepo").val();
 	/*console.log(segnalazione.titolo);
@@ -695,6 +709,8 @@ app.sendRepo = function (){
                                     alert("Invio segnalazione riuscito!");
                                     app.stopWaiting();
                                     app.clearRepo();
+                                    app.enableButton("sendButton");
+                                    app.enableButton("takePhoto");
                                     app.navigate(app.mainView);
                                 });
 
@@ -703,7 +719,8 @@ app.sendRepo = function (){
                                 // fallita la post doc
                                 console.log("sendRepo(): postDoc error: ");
                                 console.log(JSON.stringify(err));
-
+                                app.enableButton("sendButton");
+                                app.enableButton("takePhoto");
                                 app.stopWaiting();
                                 alert("Invio segnalazione fallito!...Prova di nuovo");
                             }
@@ -715,12 +732,16 @@ app.sendRepo = function (){
                         }, function (error){
                            console.log("sendRepo(): fileEntry.file errore: " + JSON.stringify(error));
                             app.stopWaiting();
+                            app.enableButton("sendButton");
+                            app.enableButton("takePhoto");
                             alert("Impossibile inviare la segnalazione. Riprova");
                         });
                     }, function (error){
                         // non è stato possibile aprire il file app.tmpUri
                         console.log("sendRepo(): resolveLocalFileSystemURI errore: " + JSON.stringify(error));
                         app.stopWaiting();
+                        app.enableButton("sendButton");
+                        app.enableButton("takePhoto");
                         alert("Invio segnalazione fallito!...Prova di nuovo");
                     });
 
@@ -732,6 +753,8 @@ app.sendRepo = function (){
 					console.log("                message: " + error.code);
 					/** appena la chiamata ritorna termino l'animazione */
 					app.stopWaiting();
+                    app.enableButton("sendButton");
+                    app.enableButton("takePhoto");
 					if (error.code == PositionError.TIMEOUT) console.log("timeout scaduto");
 					alert("Impossibile ottenere la posizione. Controllare le impostazioni per il gps");
 				}, {enableHighAccuracy: false, timeout: 5000, maximumAge: 15000}); //opzione che permette di ottenere la posizione sfruttando il gps del dispositivo
