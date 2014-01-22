@@ -505,7 +505,7 @@ app.loadRepo = function(e){
 		$("#indirizzo").text(jsonRepo.indirizzo);
 		$("#data").text(app.dateToString(jsonRepo.data));
         $("#latitudine").text(app.decToSes(jsonRepo.loc.latitude) + " °N");
-        $("#longitudine").text(app.decToSes(jsonRepo.loc.latitude) + " °E");
+        $("#longitudine").text(app.decToSes(jsonRepo.loc.longitude) + " °E");
         console.log("stopWaiting()");
         app.stopWaiting();
 
