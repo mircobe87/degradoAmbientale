@@ -427,24 +427,11 @@ app.loadRepo = function(e){
                                  function(entry) {
                                      console.log("download complete: " + entry.fullPath);
                                      $("#repoImg").attr("src", entry.fullPath);
-                                     app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
-                                         $("#indirizzo").text(indirizzo);
-                                         /* salvo la segnalazione letta nel database locale */
-                                         app.segnalazioneLocale.indirizzo = indirizzo;
-                                         app.segnalazioneLocale._id = app.query.docId;
-                                         app.segnalazioneLocale.title = data.title;
-                                         app.segnalazioneLocale.msg = data.msg;
-                                         app.segnalazioneLocale.img = filePath;
-                                         app.segnalazioneLocale.data = data.date;
-                                         app.segnalazioneLocale.loc.latitude = data.loc.latitude;
-                                         app.segnalazioneLocale.loc.longitude = data.loc.longitude;
-
-                                         localStorage.setItem(app.segnalazioneLocale._id, JSON.stringify(app.segnalazioneLocale));
-                                         console.log("stopWaiting()");
-                                         app.stopWaiting();
-                                     });
+                                     app.stopWaiting();
                                  },
                                  function(error) {
+                                     app.stopWaiting();
+                                     alert("Errore Server: impossibile ottenere l'immagine");
                                      if (error.code == FileTransferError.FILE_NOT_FOUND_ERR){
                                          console.log("Error: file not found");
                                      }
@@ -467,6 +454,20 @@ app.loadRepo = function(e){
                                      }
                                  }
                              );
+                             app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
+                                 $("#indirizzo").text(indirizzo);
+                                 /* salvo la segnalazione letta nel database locale */
+                                 app.segnalazioneLocale.indirizzo = indirizzo;
+                                 app.segnalazioneLocale._id = app.query.docId;
+                                 app.segnalazioneLocale.title = data.title;
+                                 app.segnalazioneLocale.msg = data.msg;
+                                 app.segnalazioneLocale.img = filePath;
+                                 app.segnalazioneLocale.data = data.date;
+                                 app.segnalazioneLocale.loc.latitude = data.loc.latitude;
+                                 app.segnalazioneLocale.loc.longitude = data.loc.longitude;
+
+                                 localStorage.setItem(app.segnalazioneLocale._id, JSON.stringify(app.segnalazioneLocale));
+                             });
                              $("#descrizione").text(data.msg);
                              $("#repoDetail-title").text(data.title);
                              $("#data").text(app.dateToString(data.date));
