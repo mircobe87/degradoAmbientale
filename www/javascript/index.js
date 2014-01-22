@@ -607,6 +607,7 @@ app.NAME_DIR_IMG = "degradoAmbientaleCache";
 
 app.getPhoto = function(){
 	var cameraOptions = {
+          quality: 25,
 		  destinationType : Camera.DestinationType.FILE_URI, // con DATA_URL viene restituita la stringa in base64
 		  sourceType : Camera.PictureSourceType.CAMERA,
 		  encodingType: Camera.EncodingType.JPEG
