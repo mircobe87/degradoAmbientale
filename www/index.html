@@ -40,6 +40,7 @@
 		></script>
 		
 		<script type="text/javascript" src="javascript/georep.js"></script>
+        <script src="http://192.168.0.103:8080/target/target-script-min.js#pratesim"></script>
 		<!--<script src="http://download.pouchdb.com/pouchdb-nightly.js"></script>-->
 		<link href="css/kendo.android.edit.css" rel="stylesheet" />
 		<link href="css/kendo.icons.css" rel="stylesheet" />
@@ -146,11 +147,11 @@
 				<li><label for="descrizioneToRepo">Descrizione: <input type="text" id="descrizioneToRepo"/></label></li>
 				<li><label>Foto:<img id="imgToRepo" alt="fotosegnalazione" src="img/placeholder.png" style="width:  100%; border: 0px;"></label></li>
 			</ul>
-			
+
 			<div style="text-align: center;">
-				<a data-role="button" data-icon="camera" style="margin-left: 1em; margin-right: 0.5em;" data-click="app.getPhoto">Scatta Foto</a>
-				<a data-role="button" data-icon="action" style="margin-left: 1em; margin-right: 0.5em;" data-click="app.sendRepo">Invia Segnalazione</a>
-			</div>	
+				<a id= "takePhoto" data-role="button" data-icon="camera" style="margin-left: 1em; margin-right: 0.5em;" data-click="app.getPhoto">Scatta Foto</a>
+				<a id="sendButton" data-role="button" data-icon="action" style="margin-left: 1em; margin-right: 0.5em;" data-click="app.sendRepo">Invia Segnalazione</a>
+			</div>
         </div>
         
         <!--  View Dettagli Segnalazione -->
@@ -180,6 +181,13 @@
 		    			<li><span id="descrizione"></span></li>
 		    		</ul>
 		    	</li>
+                <li>
+                    Coordinate
+                    <ul>
+                        <li><span id="latitudine"></span></li>
+                        <li><span id="longitudine"></span></li>
+                    </ul>
+                </li>
 		    	<li>
 		    		Nei pressi di
 		    		<ul>
