@@ -7,7 +7,7 @@
     <author email="support@phonegap.com" href="http://phonegap.com">
         Bertelli Mirco, Pratesi Maurizio
     </author>
-    <preference name="orientation" value="portrait" />
+    <!--<preference name="orientation" value="portrait" />-->
     <preference name="target-device" value="android" />
     <preference name="fullscreen" value="false" />
     <preference name="webviewbounce" value="true" />
