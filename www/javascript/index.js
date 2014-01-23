@@ -945,7 +945,7 @@ app.loader = function() {
 		localStorage.userMail = app.FAKE_MAIL;
 		app.configServer();
 		
-		app.startWaiting();
+		//app.startWaiting();
 		georep.user.check(function(err, data){
 			if(!err){
 				if(data.isRegistered){
@@ -957,17 +957,21 @@ app.loader = function() {
 							app.configServer();
 
 							//app.initMap();
-							app.stopWaiting();
+							//app.stopWaiting();
+                            //navigator.splashscreen.hide();
 							app.navigate(app.mainView);
+
 						}else{
 						// errore comunicazione della getRemote
-							app.stopWaiting();
+                            //app.splashscreen.hide();
+							//app.stopWaiting();
 							localStorage.clear();
 							alert("Errore Server. Prova più tardi");
 						}
 					});
 				}else{
-					app.stopWaiting();
+                    //navigator.splashscreen.hide();
+					//app.stopWaiting();
 				// utente non registrato
 					// si rimane fermi qui nella view delle opzioni e la funzione
 					// di click del bottone 'fatto' penserà a registrare l'utente.
@@ -975,7 +979,8 @@ app.loader = function() {
 					// perchè deve fare una signup
 				}
 			}else{
-				app.stopWaiting();
+                //app.splashscreen.hide();
+				//app.stopWaiting();
 				localStorage.clear();
 				alert("Errore Server. Prova più tardi");
 			}
@@ -986,7 +991,9 @@ app.loader = function() {
 		app.configServer();
 
 		//app.initMap();
+        //navigator.splashscreen.hide();
 		app.navigate(app.mainView);
+
 	}
 };
 
