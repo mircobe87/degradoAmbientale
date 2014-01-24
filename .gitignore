@@ -1,4 +1,6 @@
 *~
 *.project
 *.orig
-
+.idea/
+platforms/
+plugins/
