@@ -611,10 +611,10 @@ app.getPhoto = function(){
           quality: 25,
 		  destinationType : Camera.DestinationType.FILE_URI, // con DATA_URL viene restituita la stringa in base64
 		  sourceType : Camera.PictureSourceType.CAMERA,
-		  encodingType: Camera.EncodingType.JPEG
-		  /*targetWidth: 100,
-		  targetHeight: 100,
-		  saveToPhotoAlbum: true*/		
+		  encodingType: Camera.EncodingType.JPEG,
+		  targetWidth: 2048,
+		  targetHeight: 2048
+		  /*saveToPhotoAlbum: true*/
 	};
 	navigator.camera.getPicture(
 			/* funzione chiamata quando lo scatto della foto ha avuto successo */
