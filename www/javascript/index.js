@@ -236,11 +236,11 @@ app.updateMap = function(){
 					 */
 					docId: data.rows[i].id,
 					/**
-					 * docId: property ausiliaria utile per quando si clicchera'
+					 * userId: property ausiliaria utile per quando si clicchera'
 					 * sul marker: in questo modo possiamo chiedere al
 					 * server nick e mail dell'utente tramite userId
 					 */
-					userId: data.rows[i].value,
+					userId: data.rows[i].value.userId,
 					position: new google.maps.LatLng(
 						/** latitudine  (asse y) */
 						data.rows[i].geometry.coordinates[1],
