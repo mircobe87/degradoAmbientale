@@ -652,6 +652,8 @@ app.sendRepo = function (){
 	console.log(segnalazione.descrizione);*/
 	if (!app.segnalazione.title || !app.segnalazione.msg || app.tmpUri == "" ){
 		alert("Completare tutti i campi e scattare una foto prima di inviare la segnalazione!");
+		app.enableButton("sendButton");
+                app.enableButton("takePhoto");
 	}
 	else{
 		/** avvio l'animazione di caricamento */
