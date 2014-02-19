@@ -863,7 +863,7 @@ app.configServer = function(){
 	georep.db.setDBName('testdb');
 	georep.db.setURLServer({
 		proto: 'http://',
-		host: 'pram.homepc.it',
+		host: 'pram.no-ip.org',
 		port: 5984
 	});
 };
