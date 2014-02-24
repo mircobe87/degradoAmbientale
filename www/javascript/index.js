@@ -382,9 +382,18 @@ app.decToSes = function(dec){
 
 /* carica la segnalazione completa */
 app.loadRepo = function(e){
+     var downloaded = []; ////vettore necessario per capire se sono stati scaricati sia i dati del segnalatore sia la segnalazione
      georep.db.setDBName('testdb');
      /** avvio l'animazione di caricamento */
      app.startWaiting();
+
+     $(window).on("repoDownloaded", function (evt, which){ // which: stringa che identifica chi ha scatenato l'evento
+         downloaded.push(which);
+         if (downloaded.length == 2){
+             console.log("Scaricati sia dati segnalatore sia segnalazione. Terminare animazione caricamento");
+             app.stopWaiting();
+         }
+     });
      /** ottengo i dati della segnalazione **/
      /* provo a prendere la segnalazione dal database locale */
      var repo = localStorage.getItem(app.query.docId);
@@ -405,6 +414,31 @@ app.loadRepo = function(e){
 	    	 else {
 
                  var remoteAttachmentUrl = encodeURI(georep.db.proto + georep.db.host + ":" + georep.db.port + "/" + georep.db.name + "/" + app.query.docId + "/" + app.ATTACHMENT_REMOTE_NAME);
+                 var d = new Date();
+                 var n = d.getTime();
+                 //nome file dove verrà salvata l'immagine della segnalazione
+                 var newFileName = n + ".jpeg";
+
+                 $("#descrizione").text(data.msg);
+                 $("#repoDetail-title").text(data.title);
+                 $("#data").text(app.dateToString(data.date));
+                 $("#latitudine").text(app.decToSes(data.loc.latitude) + " °N");
+                 $("#longitudine").text(app.decToSes(data.loc.longitude) + " °E");
+
+                 app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
+                     $("#indirizzo").text(indirizzo);
+                     /* salvo la segnalazione letta nel database locale */
+                     app.segnalazioneLocale.indirizzo = indirizzo;
+                     app.segnalazioneLocale._id = app.query.docId;
+                     app.segnalazioneLocale.title = data.title;
+                     app.segnalazioneLocale.msg = data.msg;
+                     app.segnalazioneLocale.img = newFileName;
+                     app.segnalazioneLocale.data = data.date;
+                     app.segnalazioneLocale.loc.latitude = data.loc.latitude;
+                     app.segnalazioneLocale.loc.longitude = data.loc.longitude;
+
+                     localStorage.setItem(app.segnalazioneLocale._id, JSON.stringify(app.segnalazioneLocale));
+                 });
 
                  requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem){
                      // funzione chiamata in caso sia stato ottenuto un filesystem con successo
@@ -414,10 +448,6 @@ app.loadRepo = function(e){
                          // funzione chiamata in caso sia stato possibile creare la directory
                          // salvo l'immagine in questa dir
                          console.log("Directory open/create");
-                         var d = new Date();
-                         var n = d.getTime();
-                         //new file name
-                         var newFileName = n + ".jpeg";
                          /* crea un file con nome newFileName */
                          parent.getFile(newFileName, {create: true}, function(fileEntry){
                              console.log("file created with name: " + fileEntry.name);
@@ -432,10 +462,24 @@ app.loadRepo = function(e){
                                  function(entry) {
                                      console.log("download complete: " + entry.fullPath);
                                      $("#repoImg").attr("src", entry.fullPath);
-                                     app.stopWaiting();
+                                     app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
+                                         $("#indirizzo").text(indirizzo);
+                                         /* salvo la segnalazione letta nel database locale */
+                                         app.segnalazioneLocale.indirizzo = indirizzo;
+                                         app.segnalazioneLocale._id = app.query.docId;
+                                         app.segnalazioneLocale.title = data.title;
+                                         app.segnalazioneLocale.msg = data.msg;
+                                         app.segnalazioneLocale.img = filePath;
+                                         app.segnalazioneLocale.data = data.date;
+                                         app.segnalazioneLocale.loc.latitude = data.loc.latitude;
+                                         app.segnalazioneLocale.loc.longitude = data.loc.longitude;
+
+                                         localStorage.setItem(app.segnalazioneLocale._id, JSON.stringify(app.segnalazioneLocale));
+                                     });
+                                     $(window).trigger("repoDownloaded", "repo");
                                  },
                                  function(error) {
-                                     app.stopWaiting();
+                                     $(window).trigger("repoDownloaded", "repo");
                                      alert("Errore Server: impossibile ottenere l'immagine");
                                      if (error.code == FileTransferError.FILE_NOT_FOUND_ERR){
                                          console.log("Error: file not found");
@@ -459,38 +503,23 @@ app.loadRepo = function(e){
                                      }
                                  }
                              );
-                             app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
-                                 $("#indirizzo").text(indirizzo);
-                                 /* salvo la segnalazione letta nel database locale */
-                                 app.segnalazioneLocale.indirizzo = indirizzo;
-                                 app.segnalazioneLocale._id = app.query.docId;
-                                 app.segnalazioneLocale.title = data.title;
-                                 app.segnalazioneLocale.msg = data.msg;
-                                 app.segnalazioneLocale.img = filePath;
-                                 app.segnalazioneLocale.data = data.date;
-                                 app.segnalazioneLocale.loc.latitude = data.loc.latitude;
-                                 app.segnalazioneLocale.loc.longitude = data.loc.longitude;
 
-                                 localStorage.setItem(app.segnalazioneLocale._id, JSON.stringify(app.segnalazioneLocale));
-                             });
-                             $("#descrizione").text(data.msg);
-                             $("#repoDetail-title").text(data.title);
-                             $("#data").text(app.dateToString(data.date));
-                             $("#latitudine").text(app.decToSes(data.loc.latitude) + " °N");
-                             $("#longitudine").text(app.decToSes(data.loc.longitude) + " °E");
 
                          }, function(error){
-                             app.stopWaiting();
+                             alert("Errore Filesystem: impossibile scaricare l'immagine");
+                             $(window).trigger("repoDownloaded", "repo");
                              console.log("Impossible open/create file. Error: ");
                              console.log(error.code);
                          });
                      }, function(error){
-                         app.stopWaiting();
+                         alert("Errore Filesystem: impossibile scaricare l'immagine");
+                         $(window).trigger("repoDownloaded", "repo");
                          console.log("Impossible open/create directory. Error: ");
                          console.log(error.code);
                      });
                  }, function(error){
-                     app.stopWaiting();
+                     alert("Errore Filesystem: impossibile scaricare l'immagine");
+                     $(window).trigger("repoDownloaded", "repo");
                      console.log("impossible open fileSystem. Error: ");
                      console.log(error.code);
                  });
@@ -512,7 +541,7 @@ app.loadRepo = function(e){
         $("#latitudine").text(app.decToSes(jsonRepo.loc.latitude) + " °N");
         $("#longitudine").text(app.decToSes(jsonRepo.loc.longitude) + " °E");
         console.log("stopWaiting()");
-        app.stopWaiting();
+        $(window).trigger("repoDownloaded", "repo");
 
      }
     
@@ -526,13 +555,14 @@ app.loadRepo = function(e){
         		console.log("Dati sull'utente con id: " + app.query.userId + " impossibile recuperarli dal server e non presenti in cache");
                 $("#nickName").text("Non disponibile");
                 $("#mail").text("Non disponibile");
-                alert("Dati del segnalatore non disponibili. Prova più tardi");
+                $(window).trigger("repoDownloaded", "reporter");
         	}
         	else{
         		console.log("Dati segnalatore disponibili in locale: \n" + user);
         		var jsonUser = JSON.parse(user);
                 $("#nickName").text(jsonUser.nick);
                 $("#mail").text(jsonUser.mail);
+                $(window).trigger("repoDownloaded", "reporter");
         	}
 
             console.log("messaggio di errore del server: ");
@@ -549,6 +579,7 @@ app.loadRepo = function(e){
             app.utenteRepoLocale.mail = data.mail;
             localStorage.setItem(app.query.userId, JSON.stringify(app.utenteRepoLocale));
             console.log("Dati segnalatore salvati in locale: \n" + localStorage.getItem(app.query.userId));
+            $(window).trigger("repoDownloaded", "reporter");
         }
      });
 

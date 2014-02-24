@@ -3,7 +3,7 @@ var georep = {
 	// sezione relativa a costanti utilizzate nel resto del codice
 	constants: {
         /* timeout,  in millisecondi, per le richieste http*/
-        defaultTimeout: 5000,
+        defaultTimeout: 20000,
 		/* vettore contenente l'elenco dei designDoc usati */
 		designDocs: [
 			{
@@ -24,7 +24,7 @@ var georep = {
         // delle richieste di signup 
         nodeJsServer: {
                 proto: 'http',
-                host: 'pram.homepc.it',
+                host: 'pram.no-ip.org',
                 port: 1337
         }
 	},
