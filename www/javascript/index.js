@@ -392,6 +392,7 @@ app.loadRepo = function(e){
          if (downloaded.length == 2){
              console.log("Scaricati sia dati segnalatore sia segnalazione. Terminare animazione caricamento");
              app.stopWaiting();
+             $(window).unbind("repoDownloaded");
          }
      });
      /** ottengo i dati della segnalazione **/
@@ -407,6 +408,7 @@ app.loadRepo = function(e){
                  console.log("***Errore Server***");
                  console.log("\t" + JSON.stringify(err));
                  app.stopWaiting();
+                 $(window).unbind("repoDownloaded");
                  app.navigate('#last-view');
 	    		 alert("Impossibile scaricare segnalazione. Prova più tardi");
                  return;
@@ -426,9 +428,11 @@ app.loadRepo = function(e){
                  $("#longitudine").text(app.decToSes(data.loc.longitude) + " °E");
 
                  app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
-                     $("#indirizzo").text(indirizzo);
+                     var address;
+                     address = indirizzo == "" ? "Non disponibile" : indirizzo;
+                     $("#indirizzo").text(address);
                      /* salvo la segnalazione letta nel database locale */
-                     app.segnalazioneLocale.indirizzo = indirizzo;
+                     app.segnalazioneLocale.indirizzo = address;
                      app.segnalazioneLocale._id = app.query.docId;
                      app.segnalazioneLocale.title = data.title;
                      app.segnalazioneLocale.msg = data.msg;
@@ -463,6 +467,7 @@ app.loadRepo = function(e){
                                      console.log("download complete: " + entry.fullPath);
                                      $("#repoImg").attr("src", entry.fullPath);
                                      app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
+                                         var address = indirizzo == "" ? "Non disponibile" : indirizzo;
                                          $("#indirizzo").text(indirizzo);
                                          /* salvo la segnalazione letta nel database locale */
                                          app.segnalazioneLocale.indirizzo = indirizzo;
