@@ -382,38 +382,150 @@ app.decToSes = function(dec){
 
 /* carica la segnalazione completa */
 app.loadRepo = function(e){
-     var downloaded = []; ////vettore necessario per capire se sono stati scaricati sia i dati del segnalatore sia la segnalazione
+     var downloaded = []; //vettore necessario per capire se sono stati scaricati sia i dati del segnalatore sia la segnalazione
      georep.db.setDBName('testdb');
      /** avvio l'animazione di caricamento */
      app.startWaiting();
 
-     $(window).on("repoDownloaded", function (evt, which){ // which: stringa che identifica chi ha scatenato l'evento
-         downloaded.push(which);
-         if (downloaded.length == 2){
-             console.log("Scaricati sia dati segnalatore sia segnalazione. Terminare animazione caricamento");
-             app.stopWaiting();
-             $(window).unbind("repoDownloaded");
-         }
-     });
-     /** ottengo i dati della segnalazione **/
-     /* provo a prendere la segnalazione dal database locale */
-     var repo = localStorage.getItem(app.query.docId);
-     
-     if (repo == null){
-     	// segnalazione non presente in locale
-     	console.log("Segnalazione con id: " + app.query.docId + " non presente in cache\nProvo a scaricare la segnalazione dal server");
-		 //provo a leggere i dati dal server
-		 georep.db.getDoc(app.query.docId, false, function(err, data){
-	    	 if (err != undefined){
-                 console.log("***Errore Server***");
-                 console.log("\t" + JSON.stringify(err));
-                 app.stopWaiting();
-                 $(window).unbind("repoDownloaded");
-                 app.navigate('#last-view');
-	    		 alert("Impossibile scaricare segnalazione. Prova più tardi");
-                 return;
-	    	 }
-	    	 else {
+    // mette window in ascolto dell'evento repoDownloaded in modo da terminare l'animazione quando sia i dati che l'immagine della segnalazione sono stati scaricati
+    function setListener() {
+        $(window).on("repoDownloaded", function (evt, which) { // which: stringa che identifica chi ha scatenato l'evento
+            downloaded.push(which);
+            console.log("evento repoDownloaded catturato: " + downloaded);
+            if (downloaded.length == 2) {
+                console.log("Scaricati sia dati segnalatore sia segnalazione. Terminare animazione caricamento");
+                downloaded = [];
+                app.stopWaiting();
+                $(window).unbind("repoDownloaded");
+            }
+        });
+    }
+    setListener();
+
+    function getRepoImg(newFileName, remoteAttachmentUrl, data){
+        requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem){
+            // funzione chiamata in caso sia stato ottenuto un filesystem con successo
+            // creo una directory (se non esiste già) nella quale salvare l'immagine scattata dalla fotocamera
+            console.log("FileSystem open with name: " + fileSystem.name);
+            fileSystem.root.getDirectory(app.NAME_DIR_IMG, {create: true}, function(parent){
+                // funzione chiamata in caso sia stato possibile creare la directory
+                // salvo l'immagine in questa dir
+                console.log("Directory open/create");
+                /* crea un file con nome newFileName */
+                parent.getFile(newFileName, {create: true}, function(fileEntry){
+                    console.log("file created with name: " + fileEntry.name);
+
+                    var fileTransfer = new FileTransfer();
+                    var uri = remoteAttachmentUrl;
+                    var filePath = fileEntry.fullPath;
+
+                    fileTransfer.download(
+                        uri,
+                        filePath,
+                        function(entry) {
+                            console.log("download complete: " + entry.fullPath);
+                            $("#repoImg").attr("src", entry.fullPath);
+                            app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
+                                var address = indirizzo == "" ? "Non disponibile" : indirizzo;
+                                $("#indirizzo").text(indirizzo);
+                                /* salvo la segnalazione letta nel database locale */
+                                app.segnalazioneLocale.indirizzo = indirizzo;
+                                app.segnalazioneLocale._id = app.query.docId;
+                                app.segnalazioneLocale.title = data.title;
+                                app.segnalazioneLocale.msg = data.msg;
+                                app.segnalazioneLocale.img = filePath;
+                                app.segnalazioneLocale.data = data.date;
+                                app.segnalazioneLocale.loc.latitude = data.loc.latitude;
+                                app.segnalazioneLocale.loc.longitude = data.loc.longitude;
+
+                                localStorage.setItem(app.segnalazioneLocale._id, JSON.stringify(app.segnalazioneLocale));
+                            });
+                            $(window).trigger("repoDownloaded", "repo");
+                        },
+                        function(error) {
+                            $(window).trigger("repoDownloaded", "repo");
+                            alert("Errore Server: impossibile ottenere l'immagine");
+                            $("#repoImg").attr("src", "img/reloadPhoto.png");
+                            $("#repoImg").unbind("click");
+                            $("#repoImg").on("click", function(jsonRepo){
+                                //nome file dove verrà salvata l'immagine della segnalazione
+                                var fileName = new Date().getTime() + ".jpeg";
+                                var remoteAttachmentUrl = encodeURI(georep.db.proto + georep.db.host + ":" + georep.db.port + "/" + georep.db.name + "/" + app.query.docId + "/" + app.ATTACHMENT_REMOTE_NAME);
+                                setListener();
+                                $(window).trigger("repoDownloaded", "reporter");
+                                app.startWaiting();
+                                getRepoImg(newFileName, remoteAttachmentUrl, data);
+                            });
+                            /* rimuovo il file che doveva contenere l'immagine in quanto non  sono riuscito a salvarcela */
+                            resolveLocalFileSystemURL(filePath, function (fileToRemove){
+                                fileToRemove.remove();
+                                console.log("getRepoImg() - File: " + filePath + " rimosso perchè non vi è stata salvata nessuna foto");
+                            }, function (err){
+                                console.log("getRepoImg() - Impossibile rimuovere il file " + filePath + " .\n\tErrore: " + err.code);
+                            });
+                            if (error.code == FileTransferError.FILE_NOT_FOUND_ERR){
+                                console.log("Error: file not found");
+                            }
+                            else if (error.code == FileTransferError.INVALID_URL_ERR){
+                                console.log("Error: invalid url");
+                            }
+                            else if (error.code == FileTransferError.CONNECTION_ERR){
+                                console.log("Error: connection");
+                            }
+                            else {
+                                console.log("Error: abort");
+                            }
+                            console.log("download error source " + error.source);
+                            console.log("download error target " + error.target);
+                        },
+                        false,
+                        {
+                            headers: {
+                                "Authorization": " Basic " + georep.user.base64
+                            }
+                        }
+                    );
+
+
+                }, function(error){
+                    alert("Errore Filesystem: impossibile scaricare l'immagine");
+                    $(window).trigger("repoDownloaded", "repo");
+                    console.log("Impossible open/create file. Error: ");
+                    console.log(error.code);
+                });
+            }, function(error){
+                alert("Errore Filesystem: impossibile scaricare l'immagine");
+                $(window).trigger("repoDownloaded", "repo");
+                console.log("Impossible open/create directory. Error: ");
+                console.log(error.code);
+            });
+        }, function(error){
+            alert("Errore Filesystem: impossibile scaricare l'immagine");
+            $(window).trigger("repoDownloaded", "repo");
+            console.log("impossible open fileSystem. Error: ");
+            console.log(error.code);
+        });
+    }
+
+    /** ottengo i dati della segnalazione **/
+    /* provo a prendere la segnalazione dal database locale */
+    var repo = localStorage.getItem(app.query.docId);
+
+    if (repo == null){
+        // segnalazione non presente in locale
+        console.log("Segnalazione con id: " + app.query.docId + " non presente in cache\nProvo a scaricare la segnalazione dal server");
+        //provo a leggere i dati dal server
+        georep.db.getDoc(app.query.docId, false, function(err, data){
+            if (err != undefined){
+                console.log("***Errore Server***");
+                console.log("\t" + JSON.stringify(err));
+                app.stopWaiting();
+                $(window).unbind("repoDownloaded");
+                app.navigate('#last-view');
+                alert("Impossibile scaricare segnalazione. Prova più tardi");
+                return;
+            }
+            else {
 
                  var remoteAttachmentUrl = encodeURI(georep.db.proto + georep.db.host + ":" + georep.db.port + "/" + georep.db.name + "/" + app.query.docId + "/" + app.ATTACHMENT_REMOTE_NAME);
                  var d = new Date();
@@ -443,92 +555,7 @@ app.loadRepo = function(e){
 
                      localStorage.setItem(app.segnalazioneLocale._id, JSON.stringify(app.segnalazioneLocale));
                  });
-
-                 requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem){
-                     // funzione chiamata in caso sia stato ottenuto un filesystem con successo
-                     // creo una directory (se non esiste già) nella quale salvare l'immagine scattata dalla fotocamera
-                     console.log("FileSystem open with name: " + fileSystem.name);
-                     fileSystem.root.getDirectory(app.NAME_DIR_IMG, {create: true}, function(parent){
-                         // funzione chiamata in caso sia stato possibile creare la directory
-                         // salvo l'immagine in questa dir
-                         console.log("Directory open/create");
-                         /* crea un file con nome newFileName */
-                         parent.getFile(newFileName, {create: true}, function(fileEntry){
-                             console.log("file created with name: " + fileEntry.name);
-
-                             var fileTransfer = new FileTransfer();
-                             var uri = remoteAttachmentUrl;
-                             var filePath = fileEntry.fullPath;
-
-                             fileTransfer.download(
-                                 uri,
-                                 filePath,
-                                 function(entry) {
-                                     console.log("download complete: " + entry.fullPath);
-                                     $("#repoImg").attr("src", entry.fullPath);
-                                     app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
-                                         var address = indirizzo == "" ? "Non disponibile" : indirizzo;
-                                         $("#indirizzo").text(indirizzo);
-                                         /* salvo la segnalazione letta nel database locale */
-                                         app.segnalazioneLocale.indirizzo = indirizzo;
-                                         app.segnalazioneLocale._id = app.query.docId;
-                                         app.segnalazioneLocale.title = data.title;
-                                         app.segnalazioneLocale.msg = data.msg;
-                                         app.segnalazioneLocale.img = filePath;
-                                         app.segnalazioneLocale.data = data.date;
-                                         app.segnalazioneLocale.loc.latitude = data.loc.latitude;
-                                         app.segnalazioneLocale.loc.longitude = data.loc.longitude;
-
-                                         localStorage.setItem(app.segnalazioneLocale._id, JSON.stringify(app.segnalazioneLocale));
-                                     });
-                                     $(window).trigger("repoDownloaded", "repo");
-                                 },
-                                 function(error) {
-                                     $(window).trigger("repoDownloaded", "repo");
-                                     alert("Errore Server: impossibile ottenere l'immagine");
-                                     if (error.code == FileTransferError.FILE_NOT_FOUND_ERR){
-                                         console.log("Error: file not found");
-                                     }
-                                     else if (error.code == FileTransferError.INVALID_URL_ERR){
-                                         console.log("Error: invalid url");
-                                     }
-                                     else if (error.code == FileTransferError.CONNECTION_ERR){
-                                         console.log("Error: connection");
-                                     }
-                                     else {
-                                         console.log("Error: abort");
-                                     }
-                                     console.log("download error source " + error.source);
-                                     console.log("download error target " + error.target);
-                                 },
-                                 false,
-                                 {
-                                     headers: {
-                                         "Authorization": " Basic " + georep.user.base64
-                                     }
-                                 }
-                             );
-
-
-                         }, function(error){
-                             alert("Errore Filesystem: impossibile scaricare l'immagine");
-                             $(window).trigger("repoDownloaded", "repo");
-                             console.log("Impossible open/create file. Error: ");
-                             console.log(error.code);
-                         });
-                     }, function(error){
-                         alert("Errore Filesystem: impossibile scaricare l'immagine");
-                         $(window).trigger("repoDownloaded", "repo");
-                         console.log("Impossible open/create directory. Error: ");
-                         console.log(error.code);
-                     });
-                 }, function(error){
-                     alert("Errore Filesystem: impossibile scaricare l'immagine");
-                     $(window).trigger("repoDownloaded", "repo");
-                     console.log("impossible open fileSystem. Error: ");
-                     console.log(error.code);
-                 });
-
+                getRepoImg(newFileName, remoteAttachmentUrl, data);
     	    }
 	    });
      } else {
@@ -537,10 +564,28 @@ app.loadRepo = function(e){
      	
      	//setto il contenuto della view
 		console.log("Segnalazione con id: " + app.query.docId + " presente in cache: ");
-		console.log(jsonRepo);
+		console.log(JSON.stringify(jsonRepo));
 		$("#descrizione").text(jsonRepo.msg);
 		$("#repoDetail-title").text(jsonRepo.title);
-		$("#repoImg").attr("src", jsonRepo.img);
+        resolveLocalFileSystemURL(jsonRepo.img, function (fileToLoad){
+            $("#repoImg").attr("src", jsonRepo.img);
+            console.log("Immagine Caricata Correttamente da locale");
+        }, function (err){
+            console.log("Immagine locale non disponibile... Viene caricata l'immagine di default");
+            $("#repoImg").attr("src", "img/reloadPhoto.png");
+            $("#repoImg").unbind("click");
+            $("#repoImg").on("click", function(jsonRepo){
+                //nome file dove verrà salvata l'immagine della segnalazione
+                var fileName = new Date().getTime() + ".jpeg";
+                console.log("E' stato richiesto di tentare nuovamente di scaricare la foto.\nLa foto verrà eventualmente salvata nel file di nome: " + fileName);
+                var remoteAttachmentUrl = encodeURI(georep.db.proto + georep.db.host + ":" + georep.db.port + "/" + georep.db.name + "/" + app.query.docId + "/" + app.ATTACHMENT_REMOTE_NAME);
+                setListener();
+                $(window).trigger("repoDownloaded", "reporter");
+                app.startWaiting();
+                getRepoImg(fileName, remoteAttachmentUrl, jsonRepo);
+            });
+        });
+
 		$("#indirizzo").text(jsonRepo.indirizzo);
 		$("#data").text(app.dateToString(jsonRepo.data));
         $("#latitudine").text(app.decToSes(jsonRepo.loc.latitude) + " °N");
@@ -809,7 +854,7 @@ app.sendRepo = function (){
                             }
                         });
                     }
-                    window.resolveLocalFileSystemURI(app.tmpUri, function (fileEntry){
+                    window.resolveLocalFileSystemURL(app.tmpUri, function (fileEntry){
                         fileEntry.file(function (file){
                             reader.readAsDataURL(file);
                         }, function (error){
@@ -821,7 +866,7 @@ app.sendRepo = function (){
                         });
                     }, function (error){
                         // non è stato possibile aprire il file app.tmpUri
-                        console.log("sendRepo(): resolveLocalFileSystemURI errore: " + JSON.stringify(error));
+                        console.log("sendRepo(): resolveLocalFileSystemURL errore: " + JSON.stringify(error));
                         app.stopWaiting();
                         app.enableButton("sendButton");
                         app.enableButton("takePhoto");
