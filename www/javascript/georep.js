@@ -2,6 +2,8 @@
 var georep = {
 	// sezione relativa a costanti utilizzate nel resto del codice
 	constants: {
+        /* timeout,  in millisecondi, per le richieste http*/
+        defaultTimeout: 5000,
 		/* vettore contenente l'elenco dei designDoc usati */
 		designDocs: [
 			{
@@ -123,6 +125,7 @@ var georep = {
 				        */ 
 						Accept: 'application/json'	
 					},
+                    timeout: georep.constants.defaultTimeout,
 					success: function(data){
 						if(callback)
 							callback(undefined,data);
@@ -188,6 +191,7 @@ var georep = {
 						Accept: 'application/json',
 						Authorization: 'Basic ' + georep.user.base64
 					},
+                    timeout: georep.constants.defaultTimeout,
 					success: function(data){
 						if(callback)
 							callback(undefined, data);
@@ -233,6 +237,7 @@ var georep = {
 						Accept: 'application/json',
 						Authorization: 'Basic ' + georep.user.base64
 					},
+                    timeout: georep.constants.defaultTimeout,
 					success: function(data){
 						if(callback)
 							callback(undefined, data);
@@ -278,6 +283,7 @@ var georep = {
 						Accept: 'application/json',
 						Authorization: 'Basic ' + georep.user.base64
 					},
+                    timeout: georep.constants.defaultTimeout,
 					success: function(data){
 						if(callback)
 							callback(undefined, data);
@@ -402,6 +408,7 @@ var georep = {
 					headers: {
 						'Authorization': 'Basic ' + georep.user.base64
 					},
+                    timeout: georep.constants.defaultTimeout,
 					success: function(data){
 						/*console.log("Utente gia' registrato "+ data);*/
 						callback(undefined, {isRegistered: true});
@@ -460,6 +467,7 @@ var georep = {
 						Authorization: 'Basic ' + georep.user.base64
 					},
 					dataType: 'json',
+                    timeout: georep.constants.defaultTimeout,
 					success: function(data){
 						callback(undefined, data);
 					},
@@ -548,6 +556,7 @@ var georep = {
 					headers: {
 						'Authorization': 'Basic ' + georep.user.base64
 					},
+                    timeout: georep.constants.defaultTimeout,
 					success: function(data){
 						/*console.log("Utente registrato con successo! " +data);*/
 						if (callback) {
@@ -610,6 +619,7 @@ var georep = {
 								type: georep.user.type,
 								roles: georep.user.roles
 							}),
+                            timeout: georep.constants.defaultTimeout,
 							success: function(data){
 								georep.user.set(user);
 								georep.user.isConfigured();

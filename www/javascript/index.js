@@ -297,6 +297,17 @@ app.createViewList = function (){
 	}); 
 };
 
+/* prende i titoli, di tutte le segnalazioni, disponibili in locale, effettuate dall'utente.
+ */
+app.getDataFromLocal = function(){
+    if(localStorage.getItem(app.MYREPOLIST) != null){
+        app.customerDataSource.data(JSON.parse(localStorage.getItem(app.MYREPOLIST)));
+    }
+    else{
+        app.customerDataSource.data([]);
+    }
+    console.log(app.customerDataSource);
+}
 /* prende i titoli, di tutte le segnalazioni effettuate dall'utente, dal server couchdb. 
  * Poi li inserisce nella listView */
 app.getDataFromServer = function(){
@@ -312,12 +323,7 @@ app.getDataFromServer = function(){
 	}*/
     /* se non c'è connessione di rete si prende la lista locale delle segnalazioni */
     if (app.checkConnection() == false){
-     if(localStorage.getItem(app.MYREPOLIST) != null){
-        app.customerDataSource.data(JSON.parse(localStorage.getItem(app.MYREPOLIST)));
-     }
-     else
-         app.customerDataSource.data([]);
-        console.log(app.customerDataSource);
+        app.getDataFromLocal();
         console.log("Non c'è connessione di rete.");
         app.stopWaiting();
     }
@@ -327,12 +333,9 @@ app.getDataFromServer = function(){
 		georep.db.setDBName(georep.db.name);
 		georep.db.getUserDocs(georep.user._id, function(err, data){
 			if (err != undefined){
-                if(localStorage.getItem(app.MYREPOLIST) != null){
-                    app.customerDataSource.data(JSON.parse(localStorage.getItem(app.MYREPOLIST)));
-                }
-                else
-                    app.customerDataSource.data([]);
-                console.log("Impossibile contattare il server. Lista caricata da locale");
+                app.getDataFromLocal();
+                console.log("Impossibile contattare il server. Lista caricata da locale: ");
+                console.log("\t" + JSON.stringify(err));
                 app.stopWaiting();
 			}
 			else{
@@ -392,10 +395,11 @@ app.loadRepo = function(e){
 		 //provo a leggere i dati dal server
 		 georep.db.getDoc(app.query.docId, false, function(err, data){
 	    	 if (err != undefined){
-
-	    		 alert("Errore Server. Prova più tardi");
                  console.log("***Errore Server***");
-                 console.log(err);
+                 console.log("\t" + JSON.stringify(err));
+                 app.stopWaiting();
+                 app.navigate('#lastViewContent');
+	    		 alert("Errore Server. Prova più tardi");
 	    	 }
 	    	 else {
 
