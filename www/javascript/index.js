@@ -906,7 +906,7 @@ app.configServer = function(){
 	georep.db.setDBName('testdb');
 	georep.db.setURLServer({
 		proto: 'http://',
-		host: 'pram.no-ip.org',
+		host: 'cai.di.unipi.it',
 		port: 5984
 	});
 };
