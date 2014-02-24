@@ -398,8 +398,9 @@ app.loadRepo = function(e){
                  console.log("***Errore Server***");
                  console.log("\t" + JSON.stringify(err));
                  app.stopWaiting();
-                 app.navigate('#lastViewContent');
-	    		 alert("Errore Server. Prova più tardi");
+                 app.navigate('#last-view');
+	    		 alert("Impossibile scaricare segnalazione. Prova più tardi");
+                 return;
 	    	 }
 	    	 else {
 
@@ -523,6 +524,8 @@ app.loadRepo = function(e){
         	
         	if (user == null){
         		console.log("Dati sull'utente con id: " + app.query.userId + " impossibile recuperarli dal server e non presenti in cache");
+                $("#nickName").text("Non disponibile");
+                $("#mail").text("Non disponibile");
                 alert("Dati del segnalatore non disponibili. Prova più tardi");
         	}
         	else{
@@ -533,7 +536,7 @@ app.loadRepo = function(e){
         	}
 
             console.log("messaggio di errore del server: ");
-            console.log(err);
+            console.log("\t" + JSON.stringify(err));
         }
         else {
             console.log("Dati segnalatore recuperati dal server: \n" + JSON.stringify(data));
@@ -1220,6 +1223,16 @@ app.createLastListView = function (){
 	}); 
 };
 
+/* Carica la lista delle ultime segnalazioni da locale */
+app.getLastDataFromLocal = function (){
+    if(localStorage.getItem(app.LASTREPOLIST) != null){
+        app.lastRepDataSource.data(JSON.parse(localStorage.getItem(app.LASTREPOLIST)));
+    }
+    else{
+        app.lastRepDataSource.data([]);
+    }
+    console.log(app.lastRepDataSource);
+}
 /* Prende le utlime segnalazioni inviate al server e le passa alla listView */
 app.getLastDataFromServer = function(){
     app.startWaiting();
@@ -1234,20 +1247,15 @@ app.getLastDataFromServer = function(){
     }*/
     /* se non c'è connessione uso la lista locale delle ultime segnalazioni */
     if (app.checkConnection() == false){
-        console.log("non c'è connessione");
-        if(localStorage.getItem(app.LASTREPOLIST) != null)
-            app.lastRepDataSource.data(JSON.parse(localStorage.getItem(app.LASTREPOLIST)));
-        else
-            app.lastRepDataSource.data([]);
+        console.log("non c'è connessione. Dati caricati da locale");
+        app.getLastDataFromLocal();
+        app.stopWaiting();
     }
     /* se c'è connessione scarico la lista delle ultime segnalazioni dal server */
     else{
         georep.db.getLastDocs(10, function(err, data){
             if (err != undefined){
-                if(localStorage.getItem(app.LASTREPOLIST) != null)
-                    app.lastRepDataSource.data(JSON.parse(localStorage.getItem(app.LASTREPOLIST)));
-                else
-                    app.lastRepDataSource.data([]);
+                app.getLastDataFromLocal();
                 console.log("impossibile caricare le ultime segnalazioni dal server. caricata la lista locale");
                 app.stopWaiting();
             }
