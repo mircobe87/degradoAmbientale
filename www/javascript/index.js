@@ -402,6 +402,47 @@ app.loadRepo = function(e){
     }
     setListener();
 
+    function printFileError(error) {
+        switch (error.code) {
+            case FileError.NOT_FOUND_ERR:
+                console.log("\tNot found error");
+                break;
+            case FileError.SECURITY_ERR:
+                console.log("\tSecurity error");
+                break;
+            case FileError.ABORT_ERR:
+                console.log("\tAbort error");
+                break;
+            case FileError.NOT_READABLE_ERR:
+                console.log("\tNot readable error");
+                break;
+            case FileError.ENCODING_ERR:
+                console.log("\tEncoding error");
+                break;
+            case FileError.NO_MODIFICATION_ALLOWED_ERR:
+                console.log("\tNo modification allowed error");
+                break;
+            case FileError.INVALID_STATE_ERR:
+                console.log("\tInvalide state error");
+                break;
+            case FileError.SYNTAX_ERR:
+                console.log("\tSyntax error");
+                break;
+            case FileError.INVALID_MODIFICATION_ERR:
+                console.log("\tInvalid modification error");
+                break;
+            case FileError.QUOTA_EXCEEDED_ERR:
+                console.log("\tQuota exceeded error");
+                break;
+            case FileError.TYPE_MISMATCH_ERR:
+                console.log("\tType mismatch error");
+                break;
+            case FileError.PATH_EXISTS_ERR:
+                console.log("\tPath exists error");
+                break;
+        }
+    }
+
     function getRepoImg(newFileName, remoteAttachmentUrl, data){
         requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem){
             // funzione chiamata in caso sia stato ottenuto un filesystem con successo
@@ -492,21 +533,24 @@ app.loadRepo = function(e){
                     $("#repoImg").attr("src", "img/reloadPhoto.png");
                     $(window).trigger("repoDownloaded", "repo");
                     console.log("Impossible open/create file. Error: ");
-                    console.log(error.code);
+                    /*console.log(error.code);*/
+                    printFileError(error);
                 });
             }, function(error){
                 alert("Errore Filesystem: impossibile scaricare l'immagine");
                 $("#repoImg").attr("src", "img/reloadPhoto.png");
                 $(window).trigger("repoDownloaded", "repo");
                 console.log("Impossible open/create directory. Error: ");
-                console.log(error.code);
+                /*console.log(error.code);*/
+                printFileError(error);
             });
         }, function(error){
             alert("Errore Filesystem: impossibile scaricare l'immagine");
             $("#repoImg").attr("src", "img/reloadPhoto.png");
             $(window).trigger("repoDownloaded", "repo");
             console.log("impossible open fileSystem. Error: ");
-            console.log(error.code);
+            /*console.log(error.code);*/
+            printFileError(error);
         });
     }
 
