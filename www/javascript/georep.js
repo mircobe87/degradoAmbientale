@@ -262,7 +262,7 @@ var georep = {
 			var viewPath = georep.constants.designDocs[0].name + '/' +
 			               georep.constants.designDocs[0].handlers[0].name + '/' +
 			               georep.constants.designDocs[0].handlers[0].views[0];
-			var queryOpts = '?key="' + userId + '"';
+			var queryOpts = '?key="' + userId + '"' + '&descending=true';
 			
 			if (arguments.length < 1)
 				throw 'getUserDocs() richiede almeno un argomento: userId (string).';
