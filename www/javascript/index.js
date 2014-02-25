@@ -457,7 +457,7 @@ app.loadRepo = function(e){
                                 getRepoImg(newFileName, remoteAttachmentUrl, data);
                             });
                             /* rimuovo il file che doveva contenere l'immagine in quanto non  sono riuscito a salvarcela */
-                            resolveLocalFileSystemURL(filePath, function (fileToRemove){
+                            resolveLocalFileSystemURI(filePath, function (fileToRemove){
                                 fileToRemove.remove();
                                 console.log("getRepoImg() - File: " + filePath + " rimosso perchè non vi è stata salvata nessuna foto");
                             }, function (err){
@@ -489,18 +489,21 @@ app.loadRepo = function(e){
 
                 }, function(error){
                     alert("Errore Filesystem: impossibile scaricare l'immagine");
+                    $("#repoImg").attr("src", "img/reloadPhoto.png");
                     $(window).trigger("repoDownloaded", "repo");
                     console.log("Impossible open/create file. Error: ");
                     console.log(error.code);
                 });
             }, function(error){
                 alert("Errore Filesystem: impossibile scaricare l'immagine");
+                $("#repoImg").attr("src", "img/reloadPhoto.png");
                 $(window).trigger("repoDownloaded", "repo");
                 console.log("Impossible open/create directory. Error: ");
                 console.log(error.code);
             });
         }, function(error){
             alert("Errore Filesystem: impossibile scaricare l'immagine");
+            $("#repoImg").attr("src", "img/reloadPhoto.png");
             $(window).trigger("repoDownloaded", "repo");
             console.log("impossible open fileSystem. Error: ");
             console.log(error.code);
@@ -567,7 +570,7 @@ app.loadRepo = function(e){
 		console.log(JSON.stringify(jsonRepo));
 		$("#descrizione").text(jsonRepo.msg);
 		$("#repoDetail-title").text(jsonRepo.title);
-        resolveLocalFileSystemURL(jsonRepo.img, function (fileToLoad){
+        resolveLocalFileSystemURI(jsonRepo.img, function (fileToLoad){
             $("#repoImg").attr("src", jsonRepo.img);
             console.log("Immagine Caricata Correttamente da locale");
         }, function (err){
@@ -854,7 +857,7 @@ app.sendRepo = function (){
                             }
                         });
                     }
-                    window.resolveLocalFileSystemURL(app.tmpUri, function (fileEntry){
+                    window.resolveLocalFileSystemURI(app.tmpUri, function (fileEntry){
                         fileEntry.file(function (file){
                             reader.readAsDataURL(file);
                         }, function (error){
@@ -866,7 +869,7 @@ app.sendRepo = function (){
                         });
                     }, function (error){
                         // non è stato possibile aprire il file app.tmpUri
-                        console.log("sendRepo(): resolveLocalFileSystemURL errore: " + JSON.stringify(error));
+                        console.log("sendRepo(): resolveLocalFileSystemURI errore: " + JSON.stringify(error));
                         app.stopWaiting();
                         app.enableButton("sendButton");
                         app.enableButton("takePhoto");
