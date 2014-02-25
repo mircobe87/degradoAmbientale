@@ -466,6 +466,7 @@ app.loadRepo = function(e){
                         function(entry) {
                             console.log("download complete: " + entry.fullPath);
                             $("#repoImg").attr("src", entry.fullPath);
+                            console.log("Segnalazione da salvare in locale: " + JSON.stringify(data));
                             app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
                                 var address = indirizzo == "" ? "Non disponibile" : indirizzo;
                                 $("#indirizzo").text(indirizzo);
@@ -503,6 +504,7 @@ app.loadRepo = function(e){
                                 console.log("getRepoImg() - File: " + filePath + " rimosso perchè non vi è stata salvata nessuna foto");
                             }, function (err){
                                 console.log("getRepoImg() - Impossibile rimuovere il file " + filePath + " .\n\tErrore: " + err.code);
+                                printFileError(error);
                             });
                             if (error.code == FileTransferError.FILE_NOT_FOUND_ERR){
                                 console.log("Error: file not found");
