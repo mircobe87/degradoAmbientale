@@ -476,7 +476,7 @@ app.loadRepo = function(e){
                                 app.segnalazioneLocale.title = data.title;
                                 app.segnalazioneLocale.msg = data.msg;
                                 app.segnalazioneLocale.img = filePath;
-                                app.segnalazioneLocale.data = data.date;
+                                app.segnalazioneLocale.date = data.date;
                                 app.segnalazioneLocale.loc.latitude = data.loc.latitude;
                                 app.segnalazioneLocale.loc.longitude = data.loc.longitude;
 
@@ -489,9 +489,8 @@ app.loadRepo = function(e){
                             alert("Errore Server: impossibile ottenere l'immagine");
                             $("#repoImg").attr("src", "img/reloadPhoto.png");
                             $("#repoImg").unbind("click");
-                            $("#repoImg").on("click", function(jsonRepo){
+                            $("#repoImg").on("click", function(e){
                                 //nome file dove verrà salvata l'immagine della segnalazione
-                                var fileName = new Date().getTime() + ".jpeg";
                                 var remoteAttachmentUrl = encodeURI(georep.db.proto + georep.db.host + ":" + georep.db.port + "/" + georep.db.name + "/" + app.query.docId + "/" + app.ATTACHMENT_REMOTE_NAME);
                                 setListener();
                                 $(window).trigger("repoDownloaded", "reporter");
@@ -598,7 +597,7 @@ app.loadRepo = function(e){
                      app.segnalazioneLocale.title = data.title;
                      app.segnalazioneLocale.msg = data.msg;
                      app.segnalazioneLocale.img = newFileName;
-                     app.segnalazioneLocale.data = data.date;
+                     app.segnalazioneLocale.date = data.date;
                      app.segnalazioneLocale.loc.latitude = data.loc.latitude;
                      app.segnalazioneLocale.loc.longitude = data.loc.longitude;
 
@@ -607,7 +606,7 @@ app.loadRepo = function(e){
                 getRepoImg(newFileName, remoteAttachmentUrl, data);
     	    }
 	    });
-     } else {
+    } else {
      	// segnalazione presente in cache
      	var jsonRepo = JSON.parse(repo);
      	
@@ -623,7 +622,7 @@ app.loadRepo = function(e){
             console.log("Immagine locale non disponibile... Viene caricata l'immagine di default");
             $("#repoImg").attr("src", "img/reloadPhoto.png");
             $("#repoImg").unbind("click");
-            $("#repoImg").on("click", function(jsonRepo){
+            $("#repoImg").on("click", function(e){
                 //nome file dove verrà salvata l'immagine della segnalazione
                 var fileName = new Date().getTime() + ".jpeg";
                 console.log("E' stato richiesto di tentare nuovamente di scaricare la foto.\nLa foto verrà eventualmente salvata nel file di nome: " + fileName);
@@ -636,13 +635,13 @@ app.loadRepo = function(e){
         });
 
 		$("#indirizzo").text(jsonRepo.indirizzo);
-		$("#data").text(app.dateToString(jsonRepo.data));
+		$("#data").text(app.dateToString(jsonRepo.date));
         $("#latitudine").text(app.decToSes(jsonRepo.loc.latitude) + " °N");
         $("#longitudine").text(app.decToSes(jsonRepo.loc.longitude) + " °E");
         console.log("stopWaiting()");
         $(window).trigger("repoDownloaded", "repo");
 
-     }
+    }
     
      /** ottengo nick e mail di chi ha effettuato la segnalazione **/
      georep.db.setDBName('_users');
@@ -720,7 +719,7 @@ app.segnalazioneLocale = {
         latitude: "",
         longitude: ""
     },
-    data: "",
+    date: "",
 	indirizzo: ""
 };
 
@@ -828,7 +827,7 @@ app.sendRepo = function (){
                                 // la segnalazione locale contiene l'immagine in binario e non in base64
                                 app.segnalazioneLocale.img = app.tmpUri;
                                 app.segnalazioneLocale._id = data.id;
-                                app.segnalazioneLocale.data = (new Date()).getTime();
+                                app.segnalazioneLocale.date = (new Date()).getTime();
                                 app.segnalazioneLocale.loc.latitude = app.segnalazione.loc.latitude;
                                 app.segnalazioneLocale.loc.longitude = app.segnalazione.loc.longitude;
 
