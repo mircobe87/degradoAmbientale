@@ -380,6 +380,8 @@ app.decToSes = function(dec){
     return sgn + g + "° " + p + "\' " + s + "\"";
 };
 
+/* conterrà le coordinate della segnalazione della quale si stanno visualizzando i dettaglio*/
+app.repoCoords = {};
 /* carica la segnalazione completa */
 app.loadRepo = function(e){
      var downloaded = []; //vettore necessario per capire se sono stati scaricati sia i dati del segnalatore sia la segnalazione
@@ -587,6 +589,10 @@ app.loadRepo = function(e){
                  $("#latitudine").text(app.decToSes(data.loc.latitude) + " °N");
                  $("#longitudine").text(app.decToSes(data.loc.longitude) + " °E");
 
+                 /* setto le coordinate della segnalazione scaricata in modo da centrare la mappa in tali coordinate se premuto l'apposito tasto*/
+                 app.repoCoords.latitude = data.loc.latitude;
+                 app.repoCoords.longitude = data.loc.longitude;
+
                  app.coordsToAddress(data.loc.latitude, data.loc.longitude, function(indirizzo){
                      var address;
                      address = indirizzo == "" ? "Non disponibile" : indirizzo;
@@ -609,7 +615,11 @@ app.loadRepo = function(e){
     } else {
      	// segnalazione presente in cache
      	var jsonRepo = JSON.parse(repo);
-     	
+
+        /* setto le coordinate della segnalazione scaricata in modo da centrare la mappa in tali coordinate se premuto l'apposito tasto*/
+     	app.repoCoords.latitude = jsonRepo.loc.latitude;
+        app.repoCoords.longitude = jsonRepo.loc.longitude;
+
      	//setto il contenuto della view
 		console.log("Segnalazione con id: " + app.query.docId + " presente in cache: ");
 		console.log(JSON.stringify(jsonRepo));
@@ -684,6 +694,14 @@ app.loadRepo = function(e){
      georep.db.setDBName('testdb');
 };
 
+/* centra la mappa alle coordinate della segnalazione della quale si sta visualizzando il dettaglio */
+app.jumpToMap = function(){
+    console.log("jumpToMap(): {latitudine: " + app.repoCoords.latitude + " longitude: " + app.repoCoords.longitude + "}");
+    var newPosition = new google.maps.LatLng(app.repoCoords.latitude,app.repoCoords.longitude);
+    app.map.setCenter(newPosition);
+    app.map.setZoom(18);
+    app.navigate("#map-view");
+}
 /* funzione che ripulisce i campi della view all'uscita dalla view stessa */
 app.hideRepo = function(){
 	$("#nickName").text("");
@@ -999,7 +1017,7 @@ app.configServer = function(){
 	georep.db.setDBName('testdb');
 	georep.db.setURLServer({
 		proto: 'http://',
-		host: 'cai.di.unipi.it',
+		host: 'pram.no-ip.org',
 		port: 5984
 	});
 };

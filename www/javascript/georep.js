@@ -24,7 +24,7 @@ var georep = {
         // delle richieste di signup 
         nodeJsServer: {
                 proto: 'http',
-                host: 'cai.di.unipi.it',
+                host: 'pram.no-ip.org',
                 port: 1337
         }
 	},
