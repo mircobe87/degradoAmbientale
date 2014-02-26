@@ -84,75 +84,77 @@ app.markCluster;
 app.initMap = function(e){
 	//console.log("initmap");
 	//alert("InitMap");
-	
-	/** elemento nel DOM che conterra' la mappa */	
-	var mapElement = $("#map")[0];
-	
-	/** configurazione della mappa */	
-	var mapOptions = {
-		center: new google.maps.LatLng(43.720741,10.408413),
-		zoom: 10
-	};
-	
-	/** istanzia la mappa */
-	app.map = new google.maps.Map(mapElement, mapOptions);
-	//console.log('mappa istanziata');
-	/*app.geoMarker = new GeolocationMarker(app.map);*/
-	
-	/** configurazione del segnaposto per la posizione attuale */	
-	var markOptions = {
-		clickable: false,
-		flat: true,
-		icon: app.MYLOC_MARKER,
-		map: app.map,
-		position: new google.maps.LatLng(43.720741,10.408413)			
-	};
 
-	/** istanzio il segnaposto per la posizione attuale */
-	app.markMyLoc = new google.maps.Marker(markOptions);
-	
-	/** configurazione del markClaster */
-	var markClusterOptions = {
-		averageCenter: true,
-		gridSize: 24
-	};
-	
-	/** istanzion un markCluster per la mappa senza segnaposti */
-	app.markCluster = new MarkerClusterer(app.map,[],markClusterOptions);
-	
-	/**
-	 * recupera la posizione attuale e riposizione il centro della mappa e il
-	 * segnaposto.
-	 */	
-	navigator.geolocation.getCurrentPosition(function(pos){
-		var lat = pos.coords.latitude;
-		var lng = pos.coords.longitude;
-		var newPosition = new google.maps.LatLng(lat,lng);
-		console.log("initMap(): getCurrentPosition... OK");
-		console.log("               lat: " + lat + " Nord");
-		console.log("               lng: " + lng + " Est ");
-		app.map.setCenter(newPosition);
-		app.markMyLoc.setPosition(newPosition);
-	},function(error){
-		console.log("initMap(): getCurrentPosition... ERROR");
-		console.log("               code:    " + error.code);
-		console.log("               message: " + error.code);
-		if (error.code == PositionError.TIMEOUT) {
-			// da gestire se si usa la posizione accurata.
-		}else{
-			alert("Impossibile ottenere la posizione.\nControllare impostazioni GPS.");
-		}
-	},{
-		maximumAge: 15000,
-		timeout: 5000,
-		enableHighAccuracy: false
-	});
+    if (app.map == undefined){
+        /** elemento nel DOM che conterra' la mappa */
+        var mapElement = $("#map")[0];
 
-	/**
-	 * aggiorna il contenuto della mappa quando e' in 'idle' ovvero dopo
-	 * ogni spostamento o zoom
-	 */
-	google.maps.event.addListener(app.map,'idle',app.updateMap);
+        /** configurazione della mappa */
+        var mapOptions = {
+            center: new google.maps.LatLng(43.720741,10.408413),
+            zoom: 10
+        };
+
+        /** istanzia la mappa */
+        app.map = new google.maps.Map(mapElement, mapOptions);
+        //console.log('mappa istanziata');
+        /*app.geoMarker = new GeolocationMarker(app.map);*/
+
+        /** configurazione del segnaposto per la posizione attuale */
+        var markOptions = {
+            clickable: false,
+            flat: true,
+            icon: app.MYLOC_MARKER,
+            map: app.map,
+            position: new google.maps.LatLng(43.720741,10.408413)
+        };
+
+        /** istanzio il segnaposto per la posizione attuale */
+        app.markMyLoc = new google.maps.Marker(markOptions);
+
+        /** configurazione del markClaster */
+        var markClusterOptions = {
+            averageCenter: true,
+            gridSize: 24
+        };
+
+        /** istanzion un markCluster per la mappa senza segnaposti */
+        app.markCluster = new MarkerClusterer(app.map,[],markClusterOptions);
+
+        /**
+         * recupera la posizione attuale e riposizione il centro della mappa e il
+         * segnaposto.
+         */
+        navigator.geolocation.getCurrentPosition(function(pos){
+            var lat = pos.coords.latitude;
+            var lng = pos.coords.longitude;
+            var newPosition = new google.maps.LatLng(lat,lng);
+            console.log("initMap(): getCurrentPosition... OK");
+            console.log("               lat: " + lat + " Nord");
+            console.log("               lng: " + lng + " Est ");
+            app.map.setCenter(newPosition);
+            app.markMyLoc.setPosition(newPosition);
+        },function(error){
+            console.log("initMap(): getCurrentPosition... ERROR");
+            console.log("               code:    " + error.code);
+            console.log("               message: " + error.code);
+            if (error.code == PositionError.TIMEOUT) {
+                // da gestire se si usa la posizione accurata.
+            }else{
+                alert("Impossibile ottenere la posizione.\nControllare impostazioni GPS.");
+            }
+        },{
+            maximumAge: 15000,
+            timeout: 5000,
+            enableHighAccuracy: false
+        });
+
+        /**
+         * aggiorna il contenuto della mappa quando e' in 'idle' ovvero dopo
+         * ogni spostamento o zoom
+         */
+        google.maps.event.addListener(app.map,'idle',app.updateMap);
+    }
 };
 
 /**
@@ -698,9 +700,9 @@ app.loadRepo = function(e){
 app.jumpToMap = function(){
     console.log("jumpToMap(): {latitudine: " + app.repoCoords.latitude + " longitude: " + app.repoCoords.longitude + "}");
     var newPosition = new google.maps.LatLng(app.repoCoords.latitude,app.repoCoords.longitude);
+    app.navigate("#map-view");
     app.map.setCenter(newPosition);
     app.map.setZoom(18);
-    app.navigate("#map-view");
 }
 /* funzione che ripulisce i campi della view all'uscita dalla view stessa */
 app.hideRepo = function(){
