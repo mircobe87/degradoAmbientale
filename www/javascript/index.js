@@ -128,12 +128,16 @@ app.initMap = function(e){
         navigator.geolocation.getCurrentPosition(function(pos){
             var lat = pos.coords.latitude;
             var lng = pos.coords.longitude;
-            var newPosition = new google.maps.LatLng(lat,lng);
+            var myPosition = new google.maps.LatLng(lat,lng);
+            /* posizione sulla quale centrare la mappa. se app.repoCoords.latitude != undefined allora la mappa è stata caricata partendo dalla view del dettaglio
+               della segnalazione, e quindi la mappa deve essere centrata sulla segnalazione. altrimenti la mappa deve essere centrata sulla posizione dell'utente
+             */
+            var centerPosition = app.repoCoords.latitude != undefined ? new google.maps.LatLng(app.repoCoords.latitude,app.repoCoords.longitude) : myposition;
             console.log("initMap(): getCurrentPosition... OK");
             console.log("               lat: " + lat + " Nord");
             console.log("               lng: " + lng + " Est ");
-            app.map.setCenter(newPosition);
-            app.markMyLoc.setPosition(newPosition);
+            app.map.setCenter(centerPosition);
+            app.markMyLoc.setPosition(myPosition);
         },function(error){
             console.log("initMap(): getCurrentPosition... ERROR");
             console.log("               code:    " + error.code);
@@ -699,10 +703,20 @@ app.loadRepo = function(e){
 /* centra la mappa alle coordinate della segnalazione della quale si sta visualizzando il dettaglio */
 app.jumpToMap = function(){
     console.log("jumpToMap(): {latitudine: " + app.repoCoords.latitude + " longitude: " + app.repoCoords.longitude + "}");
-    var newPosition = new google.maps.LatLng(app.repoCoords.latitude,app.repoCoords.longitude);
-    app.navigate("#map-view");
-    app.map.setCenter(newPosition);
-    app.map.setZoom(18);
+    var repoPosition = new google.maps.LatLng(app.repoCoords.latitude,app.repoCoords.longitude);
+    if (app.map == undefined){
+        // se la mappa non è mai stata inizializzata ci navigo semplicemente, in quanto la init map capirà da sola
+        // che la mappa va centrata sulle coordinate app.repoCoords
+        app.navigate("#map-view");
+        app.map.setZoom(18);
+    }
+    else{
+        // se la mappa è già stata inizializzata allora la centro nelle coordinate repoPosition e poi ci navigo.
+        app.map.setCenter(repoPosition);
+        app.map.setZoom(18);
+        app.navigate("#map-view");
+    }
+
 }
 /* funzione che ripulisce i campi della view all'uscita dalla view stessa */
 app.hideRepo = function(){
